@@ -68,15 +68,15 @@ bool Compiler::compile() {
 			break;
 	}
 	std::cout << "out of compile function\n\n";*/
-	parser->advance();
+	this->parser->advance();
 	this->expression();
-	parser->consume(token_type::TOKEN_EOF, "Expect end of an expression");
+	this->parser->consume(token_type::TOKEN_EOF, "Expect end of an expression");
 	this->end_compiler();
 	return !this->parser->had_error;
 
 }
 void Compiler::emit_byte(uint8_t byte) {
-	compiling_chunk->write_chunk(byte, this->parser->previous.line);
+	this->compiling_chunk->write_chunk(byte, this->parser->previous.line);
 }
 
 void Compiler::emit_bytes(uint8_t byte1, uint8_t byte2) {
@@ -128,6 +128,7 @@ void Compiler::unary() {
 	switch (operator_type) {
 	case(token_type::TOKEN_MINUS): {
 		this->emit_byte(OpCode::OP_NEGATE);
+		break;
 	}
 	default: return;
 	}
@@ -136,6 +137,7 @@ void Compiler::unary() {
 void Compiler::binary() {
 	token_type operator_type = parser->previous.type;
 	ParseRule* rule = this->get_rule(operator_type);
+	this->parse_precedence(static_cast<Precedence>(rule->precedence + 1));
 	switch (operator_type) {
 	case(token_type::TOKEN_PLUS): {
 		this->emit_byte(OpCode::OP_ADD);

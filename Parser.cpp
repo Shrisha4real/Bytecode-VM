@@ -8,8 +8,9 @@ void Parser::advance() {
 	this->previous = this->current;
 	while (true) {
         this->current = (this->scanner)->scan_token();
-		if (this->current.type == token_type::TOKEN_ERROR) break;
-		this->error_at_current(this->current.start);
+		if (this->current.type != token_type::TOKEN_ERROR) break;
+
+        this->error_at_current(this->current.start);
 
 	}
 }

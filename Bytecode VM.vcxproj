@@ -124,31 +124,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\Bytecode_vm\chunk.h" />
-    <ClInclude Include="..\Bytecode_vm\common.h" />
-    <ClInclude Include="..\Bytecode_vm\compiler.h" />
-    <ClInclude Include="..\Bytecode_vm\debug.h" />
-    <ClInclude Include="..\Bytecode_vm\Parser.h" />
-    <ClInclude Include="..\Bytecode_vm\ParseRule.h" />
-    <ClInclude Include="..\Bytecode_vm\resource.h" />
-    <ClInclude Include="..\Bytecode_vm\Scanner.h" />
-    <ClInclude Include="..\Bytecode_vm\Token.h" />
-    <ClInclude Include="..\Bytecode_vm\vm.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\Bytecode_vm\chunk.cpp" />
-    <ClCompile Include="..\Bytecode_vm\common.cpp" />
-    <ClCompile Include="..\Bytecode_vm\compiler.cpp" />
-    <ClCompile Include="..\Bytecode_vm\debug.cpp" />
-    <ClCompile Include="..\Bytecode_vm\main.cpp" />
-    <ClCompile Include="..\Bytecode_vm\Parser.cpp" />
-    <ClCompile Include="..\Bytecode_vm\ParseRule.cpp" />
-    <ClCompile Include="..\Bytecode_vm\Scanner.cpp" />
-    <ClCompile Include="..\Bytecode_vm\Token.cpp" />
-    <ClCompile Include="..\Bytecode_vm\vm.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="file.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="chunk.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="compiler.h" />
+    <ClInclude Include="debug.h" />
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="ParseRule.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Scanner.h" />
+    <ClInclude Include="Token.h" />
+    <ClInclude Include="vm.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="chunk.cpp" />
+    <ClCompile Include="common.cpp" />
+    <ClCompile Include="compiler.cpp" />
+    <ClCompile Include="debug.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="ParseRule.cpp" />
+    <ClCompile Include="Scanner.cpp" />
+    <ClCompile Include="Token.cpp" />
+    <ClCompile Include="vm.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
