@@ -1,18 +1,21 @@
 #pragma once
 #include "common.h"
 #include<vector>
+//#include "value.h"
 typedef double Value;
 
 
 class Chunk {
 public:
-	std::vector<uint8_t>code;
-	std::vector<Value>values;
-	std::vector<int>lines;
 
+	std::vector<uint8_t>code;// sequence of the bytecode instructions as a bytes
+	std::vector<Value>values;// the list of constants that are referenced by the above instructions
+	std::vector<int>lines;//line number of the code in the file
+		
 	Chunk() :code({}), values({}), lines({}) {};
 
 	size_t add_constant(Value value);
 	void write_chunk(uint8_t byte , int line);
+
 };
 

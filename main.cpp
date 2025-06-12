@@ -1,3 +1,8 @@
+/***************************************************************
+ * File: main.cpp
+ * Description: reads the DSL either from the command line or the file
+ ***************************************************************/
+
 #include "common.h"
 #include "chunk.h"
 #include "debug.h"
@@ -10,12 +15,26 @@
 using namespace std;
 
 void read_prompt();
+
+/*
+* 
+*/
 void run_file(const string& filename);
 
+
+
+/*
+*  main is the start of the function
+* it should take in none or a single argument
+* if no arguement then, read from the cmd
+* if 1 argument, the argument is the location of the file conaining a dsl
+*/
 int  main(int argc, const char* argv[]) {
+	// take the argument from the cmd if no arguement , by running read_prompt() 
 	if (argc == 1) {
 		read_prompt();
 	}
+	// if  argument then, get the location of the dsl file and pass it as a parameter to the run_file() function
 	else if(argc ==2 ){
 		run_file(argv[1]);
 	}
@@ -42,7 +61,13 @@ int  main(int argc, const char* argv[]) {
 	return 0;
 }
 
+
+/*
+ * Function: read_prompt
+ * Purpose : function reads the DSL from the file (filename)
+ */
 void read_prompt() {
+
 	std::string line;
 	while (true) {
 		std::cout << "> ";
@@ -50,18 +75,32 @@ void read_prompt() {
 
 	}
 }
+
+
+/*
+ * Function: run_file
+ * Purpose : The function reads the code from the command prompt
+ * Returns : InterpretResult - the result of program execution.
+ */
 void run_file(const string &filename) {
+	/*
+	* file is a ifstream type(fromthe ffstream library) that reads the file in binary ,mode
+	* the file is read exactly as it is ,as specified in the file
+	*/
 	ifstream file(filename, ios::binary);
 	if (!file) {
 		cerr << "The file doesn't exist\n";
 		exit(404);
 	}
-
+	/* buffer is of ostringstream type (of the sstream library) 
+	reads the entire content of the file into an ostringstream buffer,
+	which is then converted to a std::string code.
+	*/
 	ostringstream buffer;
 	buffer << file.rdbuf();
 	const std::string code = buffer.str();
-	Chunk* chunk = new Chunk;
-	VM* vm = new VM(chunk);
+
+	VM* vm = new VM();
 	InterpretResult result =  vm->intepret(code);
 	if (result == InterpretResult::INTERPRET_COMPILE_ERROR) {
 		std::cout << "INTERPRET_COMPILE_ERROR\n";

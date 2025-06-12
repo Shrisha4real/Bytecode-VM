@@ -7,11 +7,6 @@
 #include<iostream>
 #include<stack>
 
-typedef enum {
-	INTERPRET_OK,
-	INTERPRET_COMPILE_ERROR,
-	INTERPRET_RUNTIME_ERROR
-} InterpretResult;
 class VM
 {
 	Chunk* chunk;
@@ -21,9 +16,7 @@ class VM
 	std::vector<Value>stack;
 	
 public:
-	VM(Chunk* chunk);
-
-	
+	VM();	
 	InterpretResult run();
 	inline void binary_op(char op);
 	InterpretResult intepret(const std::string& source);

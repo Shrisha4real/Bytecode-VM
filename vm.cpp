@@ -1,9 +1,14 @@
+/***************************************************************
+ * File: vm.cpp
+ * Description: Implements the Virtual Machine execution logic
+ *              for the Bytecode VM project.
+ ***************************************************************/
+
 #include "vm.h"
 
 
-VM::VM(Chunk* chunk) {
-	this->chunk = chunk;
-	ip = (chunk->code).begin();
+VM::VM():chunk(new Chunk()){
+	ip = (this->chunk->code).begin();
 };
 
 
@@ -15,7 +20,7 @@ InterpretResult VM::run() {
 	std::cout << "\nexecuting run()\n";
 	while (true) {
 		
-		std::cout << "run() stackprint\t";
+		//std::cout << "run() stackprint\t";
 		for (auto it = stack.begin(); it != stack.end(); it++) {
 			std::cout << "[ " << *it << " ]\t";
 		}
@@ -96,12 +101,15 @@ void VM::binary_op(char op) {
 	}
 }
 
+/*
+ * Function: interpret
+ * Purpose : interpretes the DSL
+ * Returns : the status of interpretation
+ */
 InterpretResult VM::intepret(const std::string& source) {
-	Chunk* chunk = new Chunk;
-	Compiler compiler(source , chunk);
-	//compiler.compile(source);
-	////this->run();
-	//return InterpretResult::INTERPRET_OK;
+
+	Compiler compiler(source , this->chunk);
+
 
 	
 	if (!compiler.compile()) {
@@ -109,7 +117,7 @@ InterpretResult VM::intepret(const std::string& source) {
 		return InterpretResult::INTERPRET_COMPILE_ERROR;
 
 	}
-	this->chunk = chunk;
+	//this->chunk = chunk;
 	this->ip = (chunk->code).begin();
 	InterpretResult result = this->run();
 

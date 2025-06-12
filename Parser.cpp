@@ -1,6 +1,6 @@
 #include "Parser.h"
 
-Parser::Parser(Scanner* scanner) : had_error(false) , panic_mode(false) , current(), previous() , scanner(scanner) {
+Parser::Parser(Scanner* scanner) : had_error(false) , panic_mode(false) , current(token_type::TOKEN_EOF), previous(token_type::TOKEN_EOF) , scanner(scanner) {
     
 };
 

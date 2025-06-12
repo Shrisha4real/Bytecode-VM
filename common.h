@@ -49,4 +49,11 @@ typedef enum {
 	TOKEN_ERROR, TOKEN_EOF
 }token_type;
 
+
+typedef enum {
+	INTERPRET_OK,
+	INTERPRET_COMPILE_ERROR,
+	INTERPRET_RUNTIME_ERROR
+} InterpretResult;
+
 using parse_fn = std::function<void()>;

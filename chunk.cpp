@@ -1,3 +1,9 @@
+/***************************************************************
+ * File: chunk.cpp
+ * Description: Stores the instructions stack,and the constant values
+ *				The stacks are initially empty
+ ***************************************************************/
+
 #include"chunk.h"
 
 size_t Chunk::add_constant( Value value) {
