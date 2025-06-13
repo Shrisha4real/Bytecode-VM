@@ -2,10 +2,13 @@
 #include <variant>
 enum class ValueType{BOOL, NUMBER , NIL};
 
+
+// FIXME: use templates instead
 class Value {
+	
+public:
 	ValueType type;
 	std::variant < std::monostate, bool, double> data;
-public:
 	Value(ValueType t, std::variant<std::monostate, bool, double> d);
 	static Value Bool(bool b);
 	static Value Nil();
@@ -13,6 +16,11 @@ public:
 
 	bool as_bool() const;
 	double as_number() const;
-	bool is_nil() const;
+	bool as_nil() const;
+
+	static bool is_bool(Value v) ;
+	static bool is_number(Value v) ;
+	static bool is_nil(Value v);
+
 
 };

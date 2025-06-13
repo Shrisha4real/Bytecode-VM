@@ -21,10 +21,20 @@ double Value::as_number() const {
     return std::get<double>(this->data);
 }
 
-bool Value::is_nil() const {
+bool Value::as_nil() const {
     return std::holds_alternative<std::monostate>(data);
 }
 
 bool Value::as_bool() const {
     return std::get<bool>(this->data);
+}
+
+bool Value::is_bool(Value v) {
+    return (v.type == ValueType::BOOL);
+}
+bool Value::is_number(Value v) {
+    return (v.type == ValueType::NUMBER);
+}
+bool Value::is_nil(Value v) {
+    return (v.type == ValueType::NIL);
 }

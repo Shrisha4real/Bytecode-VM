@@ -48,6 +48,16 @@ int Debug::simple_instruction(std::string name, int offset) {
 
 int Debug::constant_instruction(const Chunk* chunk , std::string name,  int offset) {
 	uint8_t constant = (chunk->code).at(offset + 1);
-	std::cout << name << '\t' << static_cast<int>(constant) << '\t' << (chunk->values[constant]) << std::endl;
+	std::cout << name << '\t' << static_cast<int>(constant) << '\t';
+	std::visit([](auto&& arg) {
+		using T = std::decay_t<decltype(arg)>;
+		if constexpr (std::is_same_v<T, std::monostate>) {
+			std::cout << "nil";
+		}
+		else {
+			std::cout << arg;
+		}
+		}, (chunk->values[constant]).data);
+	std::cout <<  std::endl;
 	return offset + 2;	
 }

@@ -1,11 +1,14 @@
 #pragma once
 #include "common.h"
+#include"Value.h"
 #include<vector>
 //#include "value.h"
-typedef double Value;
+
 
 
 class Chunk {
+private:
+
 public:
 
 	std::vector<uint8_t>code;// sequence of the bytecode instructions as a bytes

@@ -1,12 +1,14 @@
 #pragma once
 #include"chunk.h"
 #include "common.h"
-
+#include <variant>
 #include"debug.h"
 #include"compiler.h"
 #include<iostream>
 #include<stack>
-
+#include <format>
+#include<algorithm>
+#include "Value.h"
 class VM
 {
 	Chunk* chunk;
@@ -20,6 +22,8 @@ public:
 	InterpretResult run();
 	inline void binary_op(char op);
 	InterpretResult intepret(const std::string& source);
+	void runtimeError(const std::string& message);
+	Value peek(int distance);
 private:
 	
 

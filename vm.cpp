@@ -20,9 +20,20 @@ InterpretResult VM::run() {
 	std::cout << "\nexecuting run()\n";
 	while (true) {
 		
-		//std::cout << "run() stackprint\t";
+		std::cout << "run() stackprint\t";
 		for (auto it = stack.begin(); it != stack.end(); it++) {
-			std::cout << "[ " << *it << " ]\t";
+			std::cout << "[ ";
+			std::visit([](auto&& arg) {
+				using T = std::decay_t<decltype(arg)>;
+				if constexpr (std::is_same_v<T, std::monostate>) {
+					std::cout << "nil";
+				}
+				else {
+					std::cout << arg;
+				}
+				}, it->data);
+
+			std::cout << " ]\t";
 		}
 		std::cout << std::endl;
 		Debug::disassemble_instruction(this->chunk, static_cast<int>(ip - ((this->chunk)->code).begin()));
@@ -33,14 +44,26 @@ InterpretResult VM::run() {
 		case OpCode::OP_CONSTANT: {
 			Value constant = read_constant();
 			stack.push_back(constant);
-			std::cout <<"run() -> case:OP_CONSTANT "<< constant << std::endl;
+			std::cout << "run() -> case:OP_CONSTANT ";
+
+			std::visit([](auto&& arg) {
+				using T = std::decay_t<decltype(arg)>;
+				if constexpr (std::is_same_v<T, std::monostate>) {
+					std::cout << "nil";
+				}
+				else {
+					std::cout << arg;
+				}
+				}, constant.data);
+			std::cout << std::endl;
+
 			break;
 		}		
 
 		case OpCode::OP_NEGATE:{
-			Value top = stack.back();
+			double b = stack.back().as_number();
 			stack.pop_back();
-			stack.push_back(-top);
+			stack.push_back(Value::Number(-b));
 			break;
 		}
 		case OpCode::OP_ADD: binary_op('+'); break;
@@ -50,9 +73,8 @@ InterpretResult VM::run() {
 
 
 		case OpCode::OP_RETURN:
-			Value top = stack.back();			
+			double top = stack.back().as_number();
 			stack.pop_back(); 
-
 			std::cout <<"top= " <<top << std::endl;
 			return InterpretResult::INTERPRET_OK;
 		}
@@ -63,32 +85,37 @@ Value VM::read_constant() {
 	return (chunk->values).at(VM::read_byte());
 }
 void VM::binary_op(char op) {
-	Value b = stack.back();
-	Value a = stack.at(stack.size() - 2);
+	if (!Value::is_number(this->peek(0)) || !Value::is_number(this->peek(1))) {
+		runtimeError("Operands must be numbers.");
+		return;
+		//FIXME: should return INTERPRET_RUNTIME_ERROR
+	}
+	double b = stack.back().as_number();
+	double a = stack.at(stack.size() - 2).as_number();
 	switch (op) {		
 	case '+': {
 		stack.pop_back();
 		stack.pop_back();
-		stack.push_back(a + b);
+		stack.push_back(Value::Number(a + b));
 		break;
 	}
 	case '-': {
 		stack.pop_back();
 		stack.pop_back();
-		stack.push_back(a - b);
+		stack.push_back(Value::Number(a - b));
 		break;
 	}
 	case '*': {
 		stack.pop_back();
 		stack.pop_back();
-		stack.push_back(a * b);
+		stack.push_back(Value::Number(a * b));
 		break;
 	}
 	case '/': {
 		if (b != 0) {
 			stack.pop_back();
 			stack.pop_back();
-			stack.push_back(a / b);
+			stack.push_back(Value::Number(a / b));
 		}
 		else {
 			std::cerr << "Division by zero!\n";
@@ -124,4 +151,20 @@ InterpretResult VM::intepret(const std::string& source) {
 	delete chunk;
 	return result;
 
+}
+void VM::runtimeError(const std::string& message) {
+	std::cerr << message << "\n";
+
+	size_t instruction = std::distance((this->chunk->code).begin(), this->ip) - 1;
+	int line = this->chunk->lines[instruction];
+	std::cerr << "[line " << line << "] in script\n";
+	this->stack.clear();
+}
+
+
+Value VM::peek(int distance) {
+	if (distance > this->stack.size() - 1) {
+		std::cerr << "Unreachable peek\n";
+	}
+	return this->stack.at(this->stack.size() - 1 - distance);
 }

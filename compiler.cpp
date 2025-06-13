@@ -108,7 +108,7 @@ void Compiler::number() {
 	std::stringstream ss(this->parser->previous.start);
 	double value;
 	ss >> value;
-	this->emit_constant(value);
+	this->emit_constant(Value::Number(value));
 }
 
 /*

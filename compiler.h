@@ -13,7 +13,7 @@
 #include "vm.h"
 #include "ParseRule.h"
 #include "debug.h"
-
+#include "Value.h"
 
 
 class Compiler {
