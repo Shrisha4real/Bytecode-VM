@@ -25,6 +25,7 @@ public:
 	InterpretResult intepret(const std::string& source);
 	void runtimeError(const std::string& message);
 	Value peek(int distance);
+	bool is_falsey(Value value);
 private:
 	
 

@@ -67,13 +67,34 @@ InterpretResult VM::run() {
 		}
 		case OpCode::OP_ADD: binary_op('+'); break;
 		case OpCode::OP_SUBTRACT: binary_op('-'); break;
-		case OpCode::OP_MULTIPLY: binary_op('*'); break;
+		case OpCode::OP_MULTIPLY: binary_op('*'); break;		
 		case OpCode::OP_DIVIDE: binary_op('/'); break;
-		case OpCode::OP_TRUE: stack.push_back(Value::Bool(true));
+		case OpCode::OP_GREATER:  binary_op('>'); break;
+		case OpCode::OP_LESS:     binary_op('<'); break;
+		case OpCode::OP_NIL: stack.push_back(Value::Nil()); break;
+		case OpCode::OP_FALSE: stack.push_back(Value::Bool(false)); break;
+		case OpCode::OP_TRUE: stack.push_back(Value::Bool(true)); break;
+		
+		case OpCode::OP_EQUAL: {
+			Value b = stack.back();
+			stack.pop_back();
+			Value a = stack.back();
+			stack.pop_back();
+			stack.push_back(Value::Bool(Value::valuesEqual(a, b)));
+			break;
+		}
+
+		case OpCode::OP_NOT:
+		{
+			Value back = stack.back();
+			stack.pop_back();
+			stack.push_back(Value::Bool(is_falsey(back)));
+			break;
+		}
 		//FIXME: if the back of the stack is a bool like true then this doesnt work
-		case OpCode::OP_RETURN:
+		case OpCode::OP_RETURN: {
 			Value top = stack.back();
-			stack.pop_back(); 
+			stack.pop_back();
 			std::cout << "top = ";
 			std::visit([](auto&& arg) {
 				using T = std::decay_t<decltype(arg)>;
@@ -84,8 +105,11 @@ InterpretResult VM::run() {
 					std::cout << arg;
 				}
 				}, top.data);
-			//std::cout <<"top= " <<top << std::endl;
+			std::cout << std::endl;
 			return InterpretResult::INTERPRET_OK;
+		}
+
+			
 		}
 	}
 	std::cout << "return run()\n\n";
@@ -101,29 +125,23 @@ void VM::binary_op(char op) {
 	}
 	double b = stack.back().as_number();
 	double a = stack.at(stack.size() - 2).as_number();
+	stack.pop_back();
+	stack.pop_back();
 	switch (op) {		
 	case '+': {
-		stack.pop_back();
-		stack.pop_back();
-		stack.push_back(Value::Number(a + b));
+				stack.push_back(Value::Number(a + b));
 		break;
 	}
 	case '-': {
-		stack.pop_back();
-		stack.pop_back();
 		stack.push_back(Value::Number(a - b));
 		break;
 	}
 	case '*': {
-		stack.pop_back();
-		stack.pop_back();
 		stack.push_back(Value::Number(a * b));
 		break;
 	}
 	case '/': {
 		if (b != 0) {
-			stack.pop_back();
-			stack.pop_back();
 			stack.push_back(Value::Number(a / b));
 		}
 		else {
@@ -131,6 +149,12 @@ void VM::binary_op(char op) {
 		}
 		break;
 	}
+	case'>':
+		stack.push_back(Value::Bool(a > b));
+		break;
+	case'<':
+		stack.push_back(Value::Bool(a > b));
+		break;
 	default:
 		std::cerr << "Invalid operator!\n";
 		break;
@@ -176,4 +200,9 @@ Value VM::peek(int distance) {
 		std::cerr << "Unreachable peek\n";
 	}
 	return this->stack.at(this->stack.size() - 1 - distance);
+}
+
+//CHECK IF CONDITION FOR ALL CASES
+bool VM::is_falsey(Value value) {
+	return (Value::is_nil(value) ||Value::is_bool(value));
 }

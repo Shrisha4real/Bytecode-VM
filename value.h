@@ -1,4 +1,5 @@
 #pragma once
+#include<iostream>
 #include <variant>
 enum class ValueType{BOOL, NUMBER , NIL};
 
@@ -17,6 +18,8 @@ public:
 	bool as_bool() const;
 	double as_number() const;
 	bool as_nil() const;
+
+	static bool valuesEqual(Value a, Value b);
 
 	static bool is_bool(Value v) ;
 	static bool is_number(Value v) ;

@@ -38,3 +38,15 @@ bool Value::is_number(Value v) {
 bool Value::is_nil(Value v) {
     return (v.type == ValueType::NIL);
 }
+
+bool Value::valuesEqual(Value a, Value b) {
+    if (a.type != b.type) return false;
+    switch (a.type) {
+    case ValueType::BOOL:   return a.as_bool() == b.as_bool();
+    case ValueType::NIL:    return true;
+    case ValueType::NUMBER: return a.as_number() == b.as_number();
+    default: return false; 
+    }
+    std::cerr << "shouldnt be reaching end of valEqual\n";
+    return false;
+}

@@ -20,14 +20,14 @@ Compiler::Compiler(const std::string& source, Chunk* chunk) : source(source), co
 	rules[token_type::TOKEN_SEMICOLON] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_SLASH] = { nullptr,  std::bind(&Compiler::binary, this),  Precedence::PREC_FACTOR };
 	rules[token_type::TOKEN_STAR] = { nullptr,  std::bind(&Compiler::binary, this),  Precedence::PREC_FACTOR };
-	rules[token_type::TOKEN_BANG] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_BANG_EQUAL] = { nullptr,  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_BANG] = { std::bind(&Compiler::unary,this),  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_BANG_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
 	rules[token_type::TOKEN_EQUAL] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_EQUAL_EQUAL] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_GREATER] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_GREATER_EQUAL] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_LESS] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_LESS_EQUAL] = { nullptr,  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_EQUAL_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
+	rules[token_type::TOKEN_GREATER] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
+	rules[token_type::TOKEN_GREATER_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
+	rules[token_type::TOKEN_LESS] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
+	rules[token_type::TOKEN_LESS_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
 	rules[token_type::TOKEN_IDENTIFIER] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_STRING] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_NUMBER] = { std::bind(&Compiler::number, this),   nullptr, Precedence::PREC_NONE };
@@ -167,6 +167,7 @@ void Compiler::unary() {
 	token_type operator_type = this->parser->previous.type;
 	this->parse_precedence(Precedence::PREC_UNARY);
 	switch (operator_type) {
+	case token_type::TOKEN_BANG: this->emit_byte(OP_NOT); break;
 	case(token_type::TOKEN_MINUS): {
 		this->emit_byte(OpCode::OP_NEGATE);
 		break;
@@ -180,6 +181,12 @@ void Compiler::binary() {
 	ParseRule* rule = this->get_rule(operator_type);
 	this->parse_precedence(static_cast<Precedence>(rule->precedence + 1));
 	switch (operator_type) {
+	case token_type::TOKEN_BANG_EQUAL:    this->emit_bytes(OpCode::OP_EQUAL, OpCode::OP_NOT); break;
+	case token_type::TOKEN_EQUAL_EQUAL:   this->emit_byte(OpCode::OP_EQUAL); break;
+	case token_type::TOKEN_GREATER:       this->emit_byte(OpCode::OP_GREATER); break;
+	case token_type::TOKEN_GREATER_EQUAL: this->emit_bytes(OpCode::OP_LESS, OpCode::OP_NOT); break;
+	case token_type::TOKEN_LESS:          this->emit_byte(OpCode::OP_LESS); break;
+	case token_type::TOKEN_LESS_EQUAL:    this->emit_bytes(OpCode::OP_GREATER, OpCode::OP_NOT); break;
 	case(token_type::TOKEN_PLUS): {
 		this->emit_byte(OpCode::OP_ADD);
 		break;
