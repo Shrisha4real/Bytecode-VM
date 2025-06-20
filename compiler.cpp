@@ -34,17 +34,17 @@ Compiler::Compiler(const std::string& source, Chunk* chunk) : source(source), co
 	rules[token_type::TOKEN_AND] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_CLASS] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_ELSE] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_FALSE] = { nullptr,  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_FALSE] = { std::bind(&Compiler::literal, this),  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_FOR] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_FUN] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_IF] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_NIL] = { nullptr,  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_NIL] = { std::bind(&Compiler::literal, this),  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_OR] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_PRINT] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_RETURN] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_SUPER] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_THIS] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_TRUE] = { nullptr,  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_TRUE] = { std::bind(&Compiler::literal, this),  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_VAR] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_WHILE] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_ERROR] = { nullptr,  nullptr, Precedence::PREC_NONE };
@@ -200,6 +200,15 @@ void Compiler::binary() {
 	}
  }
 
+
+void Compiler::literal() {
+	switch (parser->previous.type) {
+	case token_type::TOKEN_FALSE: this->emit_byte(OpCode::OP_FALSE); break;
+	case token_type::TOKEN_NIL: emit_byte(OpCode::OP_NIL); break;
+	case token_type::TOKEN_TRUE: emit_byte(OpCode::OP_TRUE); break;
+	default: return; // Unreachable.
+	}
+}
 /*
  * Function: grouping
  * Purpose : executes paranthesized expressions

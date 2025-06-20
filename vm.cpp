@@ -59,9 +59,8 @@ InterpretResult VM::run() {
 
 			break;
 		}		
-
 		case OpCode::OP_NEGATE:{
-			double b = stack.back().as_number();
+			auto b = stack.back().as_number();
 			stack.pop_back();
 			stack.push_back(Value::Number(-b));
 			break;
@@ -70,12 +69,22 @@ InterpretResult VM::run() {
 		case OpCode::OP_SUBTRACT: binary_op('-'); break;
 		case OpCode::OP_MULTIPLY: binary_op('*'); break;
 		case OpCode::OP_DIVIDE: binary_op('/'); break;
-
-
+		case OpCode::OP_TRUE: stack.push_back(Value::Bool(true));
+		//FIXME: if the back of the stack is a bool like true then this doesnt work
 		case OpCode::OP_RETURN:
-			double top = stack.back().as_number();
+			Value top = stack.back();
 			stack.pop_back(); 
-			std::cout <<"top= " <<top << std::endl;
+			std::cout << "top = ";
+			std::visit([](auto&& arg) {
+				using T = std::decay_t<decltype(arg)>;
+				if constexpr (std::is_same_v<T, std::monostate>) {
+					std::cout << "nil";
+				}
+				else {
+					std::cout << arg;
+				}
+				}, top.data);
+			//std::cout <<"top= " <<top << std::endl;
 			return InterpretResult::INTERPRET_OK;
 		}
 	}

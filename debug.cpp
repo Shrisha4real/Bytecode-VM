@@ -24,6 +24,12 @@ int Debug::disassemble_instruction(const Chunk* chunk,  int offset) {
 		return simple_instruction("OP_RETURN", offset);
 	case OpCode::OP_CONSTANT:
 		return constant_instruction(chunk, "OP_CONSTANT", offset);
+	case OpCode::OP_NIL:
+		return simple_instruction("OP_NIL", offset);
+	case OpCode::OP_TRUE:
+		return simple_instruction("OP_TRUE", offset);
+	case OpCode::OP_FALSE:
+		return simple_instruction("OP_FALSE", offset);
 	case OpCode::OP_ADD:
 		return simple_instruction("OP_ADD", offset);
 	case OpCode::OP_SUBTRACT:

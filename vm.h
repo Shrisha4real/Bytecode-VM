@@ -8,6 +8,7 @@
 #include<stack>
 #include <format>
 #include<algorithm>
+#include<variant>
 #include "Value.h"
 class VM
 {

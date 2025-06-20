@@ -58,6 +58,7 @@ public:
 	void expression();
 	void unary();
 	void binary();
+	void literal();
 	void parse_precedence(Precedence precedence);
 	void emit_constant(Value value);
 	uint8_t make_constant(Value value);
