@@ -28,6 +28,9 @@ InterpretResult VM::run() {
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
 				}
+				else if constexpr (std::is_same_v< T, Object>) {
+					std::cout << "object";
+				}
 				else {
 					std::cout << arg;
 				}
@@ -50,6 +53,9 @@ InterpretResult VM::run() {
 				using T = std::decay_t<decltype(arg)>;
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
+				}
+				else if constexpr (std::is_same_v< T, Object>) {
+					std::cout << "object";
 				}
 				else {
 					std::cout << arg;
@@ -100,6 +106,9 @@ InterpretResult VM::run() {
 				using T = std::decay_t<decltype(arg)>;
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
+				}
+				else if constexpr (std::is_same_v< T, Object>) {
+					std::cout << "object";
 				}
 				else {
 					std::cout << arg;

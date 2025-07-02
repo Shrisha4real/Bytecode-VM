@@ -14,6 +14,7 @@
 #include "ParseRule.h"
 #include "debug.h"
 #include "Value.h"
+#include"Object.h"
 
 
 class Compiler {
@@ -59,6 +60,7 @@ public:
 	void unary();
 	void binary();
 	void literal();
+	void string();
 	void parse_precedence(Precedence precedence);
 	void emit_constant(Value value);
 	uint8_t make_constant(Value value);

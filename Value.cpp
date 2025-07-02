@@ -1,6 +1,6 @@
 #include "Value.h"
 
-Value::Value(ValueType t, std::variant<std::monostate, bool, double> d)
+Value::Value(ValueType t, std::variant<std::monostate, bool, double, Object> d)
     : type(t), data(std::move(d)) {
 }
 
@@ -17,6 +17,11 @@ Value Value::Number(double n) {
 Value Value::Bool(bool b) {
     return { ValueType::BOOL , b };
 }
+
+Value Value::Obj(Object obj) {
+    return{ ValueType::OBJ , obj };
+}
+
 double Value::as_number() const {
     return std::get<double>(this->data);
 }
@@ -29,14 +34,21 @@ bool Value::as_bool() const {
     return std::get<bool>(this->data);
 }
 
-bool Value::is_bool(Value v) {
+Object Value::as_obj() const {
+    return std::get<Object>(this->data);
+}
+
+bool Value::is_bool(const Value& v) {
     return (v.type == ValueType::BOOL);
 }
-bool Value::is_number(Value v) {
+bool Value::is_number(const Value& v) {
     return (v.type == ValueType::NUMBER);
 }
-bool Value::is_nil(Value v) {
+bool Value::is_nil(const Value& v) {
     return (v.type == ValueType::NIL);
+}
+bool Value::is_obj(const Value& v) {
+    return (v.type == ValueType::OBJ);
 }
 
 bool Value::valuesEqual(Value a, Value b) {

@@ -70,6 +70,9 @@ int Debug::constant_instruction(const Chunk* chunk , std::string name,  int offs
 		if constexpr (std::is_same_v<T, std::monostate>) {
 			std::cout << "nil";
 		}
+		else if constexpr (std::is_same_v< T, Object>) {
+			std::cout << "object";
+		}
 		else {
 			std::cout << arg;
 		}

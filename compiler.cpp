@@ -29,7 +29,7 @@ Compiler::Compiler(const std::string& source, Chunk* chunk) : source(source), co
 	rules[token_type::TOKEN_LESS] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
 	rules[token_type::TOKEN_LESS_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
 	rules[token_type::TOKEN_IDENTIFIER] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_STRING] = { nullptr,  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_STRING] = { std::bind(&Compiler::string , this),  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_NUMBER] = { std::bind(&Compiler::number, this),   nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_AND] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_CLASS] = { nullptr,  nullptr, Precedence::PREC_NONE };
@@ -223,6 +223,11 @@ void Compiler::literal() {
 void Compiler::grouping() {
 	Compiler::expression();
 	this->parser->consume(token_type::TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
+}
+
+void Compiler::string() {
+	ObjString s(this->parser->previous.start + 1, this->parser->previous.length - 2);
+		emit_constant(Value::Obj(s));
 }
 
 ParseRule* Compiler::get_rule(token_type type) {
