@@ -226,7 +226,7 @@ void Compiler::grouping() {
 }
 
 void Compiler::string() {
-	ObjString s(this->parser->previous.start + 1, this->parser->previous.length - 2);
+	Object* s = new ObjString(this->parser->previous.start + 1, this->parser->previous.length - 2);
 		emit_constant(Value::Obj(s));
 }
 

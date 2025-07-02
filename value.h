@@ -17,18 +17,21 @@ class Value {
 	
 public:
 	ValueType type;
-	std::variant < std::monostate, bool, double , Object> data;
-	Value(ValueType t, std::variant<std::monostate, bool, double, Object> d);
+	std::variant < std::monostate, bool, double , Object*> data;
+	Value(ValueType t, std::variant<std::monostate, bool, double, Object*> d);
 
 
 	static Value Bool(bool b);
 	static Value Nil();
 	static Value Number(double d);
-	static Value Obj(Object obj);
+	static Value Obj(Object* obj);
 	bool as_bool() const;
 	double as_number() const;
 	bool as_nil() const;
-	Object as_obj() const;
+	Object* as_obj() const;
+	//ObjString* as_string() const;
+	
+
 
 	static bool valuesEqual(Value a, Value b);
 
@@ -36,5 +39,5 @@ public:
 	static bool is_number(const Value& v) ;
 	static bool is_nil(const Value& v);
 	static bool is_obj(const Value& v);
-
+	static bool is_string(const Value& v);
 };

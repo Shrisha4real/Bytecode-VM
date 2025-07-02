@@ -28,8 +28,9 @@ InterpretResult VM::run() {
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
 				}
-				else if constexpr (std::is_same_v< T, Object>) {
-					std::cout << "object";
+				else if constexpr (std::is_same_v< T, Object*>) {
+					std::cout << "object:\t";
+					arg->print();
 				}
 				else {
 					std::cout << arg;
@@ -54,8 +55,9 @@ InterpretResult VM::run() {
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
 				}
-				else if constexpr (std::is_same_v< T, Object>) {
-					std::cout << "object";
+				else if constexpr (std::is_same_v< T, Object*>) {
+
+					arg->print();
 				}
 				else {
 					std::cout << arg;
@@ -71,7 +73,29 @@ InterpretResult VM::run() {
 			stack.push_back(Value::Number(-b));
 			break;
 		}
-		case OpCode::OP_ADD: binary_op('+'); break;
+		case OpCode::OP_ADD: {
+			//binary_op('+'); 
+			if (Value::is_number(this->peek(0)) && Value::is_number(this->peek(1))) {
+				
+				double b = stack.back().as_number();
+				double a = stack.at(stack.size() - 2).as_number();
+				stack.pop_back();
+				stack.pop_back();
+				stack.push_back(Value::Number(a + b));
+			
+			}
+			else if (Value::is_string(this->peek(0)) && Value::is_string(this->peek(1))) {
+				concatinate();
+			}
+			else {
+				runtimeError("Operands must be numbers.");
+				return InterpretResult::INTERPRET_RUNTIME_ERROR;
+
+			}
+			
+			break;
+
+		};
 		case OpCode::OP_SUBTRACT: binary_op('-'); break;
 		case OpCode::OP_MULTIPLY: binary_op('*'); break;		
 		case OpCode::OP_DIVIDE: binary_op('/'); break;
@@ -107,8 +131,9 @@ InterpretResult VM::run() {
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
 				}
-				else if constexpr (std::is_same_v< T, Object>) {
-					std::cout << "object";
+				else if constexpr (std::is_same_v< T, Object*>) {
+					std::cout << "object:\t";
+					arg->print();
 				}
 				else {
 					std::cout << arg;
@@ -214,4 +239,24 @@ Value VM::peek(int distance) {
 //CHECK IF CONDITION FOR ALL CASES
 bool VM::is_falsey(Value value) {
 	return (Value::is_nil(value) ||Value::is_bool(value));
+}
+
+void VM::concatinate() {
+	
+	ObjString* b = dynamic_cast<ObjString*> (stack.back().as_obj());
+	if(!b){
+		std::cout << "the object isnt is of type string";
+		return;
+	}
+
+	stack.pop_back();
+	ObjString* a = dynamic_cast<ObjString*> (stack.back().as_obj());
+	if (!a) {
+		std::cout << "the object isnt is of type string";
+		return;
+	}
+	
+	stack.pop_back();
+	(*a) += (*b);
+	stack.push_back(Value::Obj(a));
 }
