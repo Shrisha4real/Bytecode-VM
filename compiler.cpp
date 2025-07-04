@@ -115,8 +115,8 @@ void Compiler::number() {
  * Function: number
  * Purpose : runs a function that pushes a constant number into the VM
  */
-void Compiler::emit_constant(Value value) {
-	this->emit_bytes(OpCode::OP_CONSTANT, Compiler::make_constant(value));
+void Compiler::emit_constant(Value&& value) {
+	this->emit_bytes(OpCode::OP_CONSTANT, Compiler::make_constant(std::move(value)));
 
 }
 
@@ -124,8 +124,8 @@ void Compiler::emit_constant(Value value) {
  * Function: make_constant
  * Purpose : pushes a constant number into the VM
  */
-uint8_t Compiler::make_constant(Value value) {
-	int constant = this->compiling_chunk->add_constant(value);
+uint8_t Compiler::make_constant(Value&& value) {
+	int constant = this->compiling_chunk->add_constant(std::move(value));
 	if (constant > UINT8_MAX) {
 		this->parser->error("Too many constants in one chunk.");
 		return 0;
@@ -226,8 +226,7 @@ void Compiler::grouping() {
 }
 
 void Compiler::string() {
-	Object* s = new ObjString(this->parser->previous.start + 1, this->parser->previous.length - 2);
-		emit_constant(Value::Obj(s));
+		emit_constant(Value::Obj(std::unique_ptr<Object>{ new ObjString(this->parser->previous.start + 1, this->parser->previous.length - 2) }));
 }
 
 ParseRule* Compiler::get_rule(token_type type) {

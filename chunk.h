@@ -15,9 +15,9 @@ public:
 	std::vector<Value>values;// the list of constants that are referenced by the above instructions
 	std::vector<int>lines;//line number of the code in the file
 		
-	Chunk() :code({}), values({}), lines({}) {};
+	Chunk() = default;
 
-	size_t add_constant(Value value);
+	size_t add_constant(Value&& value);
 	void write_chunk(uint8_t byte , int line);
 
 };

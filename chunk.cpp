@@ -6,8 +6,8 @@
 
 #include"chunk.h"
 
-size_t Chunk::add_constant( Value value) {
-	(this->values).push_back(value);
+size_t Chunk::add_constant( Value&& value) {
+	(this->values).push_back(std::move(value));
 	return ((this->values).size() - 1);
 
 }

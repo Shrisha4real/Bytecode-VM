@@ -62,8 +62,8 @@ public:
 	void literal();
 	void string();
 	void parse_precedence(Precedence precedence);
-	void emit_constant(Value value);
-	uint8_t make_constant(Value value);
+	void emit_constant(Value&& value);
+	uint8_t make_constant(Value&& value);
 	ParseRule* get_rule(token_type type);
 
 private:

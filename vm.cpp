@@ -47,7 +47,7 @@ InterpretResult VM::run() {
 
 		case OpCode::OP_CONSTANT: {
 			Value constant = read_constant();
-			stack.push_back(constant);
+			stack.push_back(std::move(constant));
 			std::cout << "run() -> case:OP_CONSTANT ";
 
 			std::visit([](auto&& arg) {
@@ -68,7 +68,7 @@ InterpretResult VM::run() {
 			break;
 		}		
 		case OpCode::OP_NEGATE:{
-			auto b = stack.back().as_number();
+			auto b = std::move(stack.back()).as_number();
 			stack.pop_back();
 			stack.push_back(Value::Number(-b));
 			break;
@@ -77,8 +77,8 @@ InterpretResult VM::run() {
 			//binary_op('+'); 
 			if (Value::is_number(this->peek(0)) && Value::is_number(this->peek(1))) {
 				
-				double b = stack.back().as_number();
-				double a = stack.at(stack.size() - 2).as_number();
+				double b = std::move(stack.back()).as_number();
+				double a = std::move(stack.at(stack.size() - 2)).as_number();
 				stack.pop_back();
 				stack.pop_back();
 				stack.push_back(Value::Number(a + b));
@@ -106,9 +106,9 @@ InterpretResult VM::run() {
 		case OpCode::OP_TRUE: stack.push_back(Value::Bool(true)); break;
 		
 		case OpCode::OP_EQUAL: {
-			Value b = stack.back();
+			Value b = std::move(stack.back());
 			stack.pop_back();
-			Value a = stack.back();
+			Value a = std::move(stack.back());
 			stack.pop_back();
 			stack.push_back(Value::Bool(Value::valuesEqual(a, b)));
 			break;
@@ -116,14 +116,14 @@ InterpretResult VM::run() {
 
 		case OpCode::OP_NOT:
 		{
-			Value back = stack.back();
+			Value back = std::move(stack.back());
 			stack.pop_back();
 			stack.push_back(Value::Bool(is_falsey(back)));
 			break;
 		}
 		//FIXME: if the back of the stack is a bool like true then this doesnt work
 		case OpCode::OP_RETURN: {
-			Value top = stack.back();
+			Value top = std::move(stack.back());
 			stack.pop_back();
 			std::cout << "top = ";
 			std::visit([](auto&& arg) {
@@ -149,7 +149,7 @@ InterpretResult VM::run() {
 	std::cout << "return run()\n\n";
 }
 Value VM::read_constant() {
-	return (chunk->values).at(VM::read_byte());
+	return std::move((chunk->values).at(VM::read_byte()));
 }
 void VM::binary_op(char op) {
 	if (!Value::is_number(this->peek(0)) || !Value::is_number(this->peek(1))) {
@@ -157,8 +157,10 @@ void VM::binary_op(char op) {
 		return;
 		//FIXME: should return INTERPRET_RUNTIME_ERROR
 	}
-	double b = stack.back().as_number();
-	double a = stack.at(stack.size() - 2).as_number();
+	Value b_val = std::move(stack.back());
+	Value a_val = std::move(stack.at(stack.size() - 2));
+	double b = b_val.as_number();
+	double a = a_val.as_number();
 	stack.pop_back();
 	stack.pop_back();
 	switch (op) {		
@@ -229,7 +231,7 @@ void VM::runtimeError(const std::string& message) {
 }
 
 
-Value VM::peek(int distance) {
+Value& VM::peek(int distance) {
 	if (distance > this->stack.size() - 1) {
 		std::cerr << "Unreachable peek\n";
 	}
@@ -237,26 +239,31 @@ Value VM::peek(int distance) {
 }
 
 //CHECK IF CONDITION FOR ALL CASES
-bool VM::is_falsey(Value value) {
+bool VM::is_falsey(Value& value) {
 	return (Value::is_nil(value) ||Value::is_bool(value));
 }
 
+//FIXME: The ObjString pointer is pointing to the unique_ptr
 void VM::concatinate() {
-	
-	ObjString* b = dynamic_cast<ObjString*> (stack.back().as_obj());
-	if(!b){
-		std::cout << "the object isnt is of type string";
+	std::unique_ptr<Object> b = std::move(stack.back()).transfer_obj();
+	ObjString* b_ptr = dynamic_cast<ObjString*>(b.get());
+	if (!b_ptr) {
+		std::cout << "the object isn't of type string\n";
 		return;
 	}
+	stack.pop_back();
 
-	stack.pop_back();
-	ObjString* a = dynamic_cast<ObjString*> (stack.back().as_obj());
-	if (!a) {
-		std::cout << "the object isnt is of type string";
+	std::unique_ptr<Object> a = std::move(stack.back()).transfer_obj();
+	ObjString* a_ptr = dynamic_cast<ObjString*>(a.get());
+	if (!a_ptr) {
+		std::cout << "the object isn't of type string\n";
 		return;
 	}
-	
 	stack.pop_back();
-	(*a) += (*b);
-	stack.push_back(Value::Obj(a));
+
+	// Modify a with b
+	(*a_ptr) += (*b_ptr);
+
+	// Push back the modified a
+	stack.push_back(Value::Obj(std::move(a)));
 }

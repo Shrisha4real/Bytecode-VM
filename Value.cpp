@@ -1,6 +1,6 @@
 #include "Value.h"
 
-Value::Value(ValueType t, std::variant<std::monostate, bool, double, Object*> d)
+Value::Value(ValueType t, std::variant<std::monostate, bool, double, std::unique_ptr<Object>> d)
     : type(t), data(std::move(d)) {
 }
 
@@ -18,8 +18,8 @@ Value Value::Bool(bool b) {
     return { ValueType::BOOL , b };
 }
 
-Value Value::Obj(Object* obj) {
-    return{ ValueType::OBJ , obj };
+Value Value::Obj(std::unique_ptr<Object>obj) {
+    return{ ValueType::OBJ , std::move(obj)};
 }
 
 double Value::as_number() const {
@@ -35,8 +35,13 @@ bool Value::as_bool() const {
 }
 
 Object* Value::as_obj() const {
-    return std::get<Object*>(this->data);
+    return std::get<std::unique_ptr<Object>>(this->data).get();
 }
+
+std::unique_ptr<Object> Value::transfer_obj() {
+    return std::exchange(std::get<std::unique_ptr<Object>>(data), nullptr);
+}
+
 //ObjString* Value::as_string() const {
 //    const ObjString* other_v = dynamic_cast<ObjString*>(v.as_obj());
 //
@@ -61,7 +66,8 @@ bool Value::is_string(const Value& v) {
    if (!other_v) return false;
    return true;*/
 }
-bool Value::valuesEqual(Value a, Value b) {
+
+bool Value::valuesEqual(Value& a, Value& b) {
     if (a.type != b.type) return false;
     switch (a.type) {
     case ValueType::BOOL:   return a.as_bool() == b.as_bool();

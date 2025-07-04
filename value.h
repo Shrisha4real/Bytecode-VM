@@ -17,23 +17,39 @@ class Value {
 	
 public:
 	ValueType type;
-	std::variant < std::monostate, bool, double , Object*> data;
-	Value(ValueType t, std::variant<std::monostate, bool, double, Object*> d);
+	std::variant < std::monostate, bool, double, std::unique_ptr<Object>> data;
+	Value(ValueType t, std::variant<std::monostate, bool, double, std::unique_ptr<Object>> d);
+	Value(Value&& other) noexcept
+		: type(other.type), data(std::move(other.data)) {
+	}
+
+	// Move assignment
+	Value& operator=(Value&& other) noexcept {
+		if (this != &other) {
+			type = other.type;
+			data = std::move(other.data);
+		}
+		return *this;
+	}
+	// Delete copy constructor to be explicit
+	Value(const Value&) = delete;
+	Value& operator=(const Value&) = delete;
 
 
 	static Value Bool(bool b);
 	static Value Nil();
 	static Value Number(double d);
-	static Value Obj(Object* obj);
+	static Value Obj(std::unique_ptr<Object>obj);
 	bool as_bool() const;
 	double as_number() const;
 	bool as_nil() const;
 	Object* as_obj() const;
+	std::unique_ptr<Object> transfer_obj();
 	//ObjString* as_string() const;
 	
 
 
-	static bool valuesEqual(Value a, Value b);
+	static bool valuesEqual(Value& a, Value& b);
 
 	static bool is_bool(const Value& v) ;
 	static bool is_number(const Value& v) ;

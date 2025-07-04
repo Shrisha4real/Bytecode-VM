@@ -8,7 +8,8 @@
 #include<stack>
 #include <format>
 #include<algorithm>
-#include<variant>
+#include<memory>
+#include<utility>
 #include "Value.h"
 class VM
 {
@@ -24,9 +25,9 @@ public:
 	inline void binary_op(char op);
 	InterpretResult intepret(const std::string& source);
 	void runtimeError(const std::string& message);
-	Value peek(int distance);
+	Value& peek(int distance);
 	void concatinate();
-	bool is_falsey(Value value);
+	bool is_falsey(Value& value);
 private:
 	
 
