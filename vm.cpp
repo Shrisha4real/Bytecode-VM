@@ -28,7 +28,7 @@ InterpretResult VM::run() {
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
 				}
-				else if constexpr (std::is_same_v< T, Object*>) {
+				else if constexpr (std::is_same_v< T,std::unique_ptr<Object>>) {
 					std::cout << "object:\t";
 					arg->print();
 				}
@@ -55,14 +55,14 @@ InterpretResult VM::run() {
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
 				}
-				else if constexpr (std::is_same_v< T, Object*>) {
+				else if constexpr (std::is_same_v< T, std::unique_ptr<Object>>) {
 
 					arg->print();
 				}
 				else {
 					std::cout << arg;
 				}
-				}, constant.data);
+				}, stack.back().data);
 			std::cout << std::endl;
 
 			break;
@@ -131,7 +131,7 @@ InterpretResult VM::run() {
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
 				}
-				else if constexpr (std::is_same_v< T, Object*>) {
+				else if constexpr (std::is_same_v< T, std::unique_ptr<Object>>) {
 					std::cout << "object:\t";
 					arg->print();
 				}

@@ -101,7 +101,7 @@ void run_file(const string &filename) {
 	const std::string code = buffer.str();
 
 	VM* vm = new VM();
-	InterpretResult result =  vm->intepret(code);
+ 	InterpretResult result =  vm->intepret(code);
 	if (result == InterpretResult::INTERPRET_COMPILE_ERROR) {
 		std::cout << "INTERPRET_COMPILE_ERROR\n";
 		exit(65);
