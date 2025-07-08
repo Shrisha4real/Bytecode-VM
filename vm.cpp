@@ -123,6 +123,9 @@ InterpretResult VM::run() {
 		}
 		//FIXME: if the back of the stack is a bool like true then this doesnt work
 		case OpCode::OP_RETURN: {
+			if (stack.empty()) {
+				return InterpretResult::INTERPRET_RUNTIME_ERROR;
+			}
 			Value top = std::move(stack.back());
 			stack.pop_back();
 			std::cout << "top = ";
@@ -181,7 +184,9 @@ void VM::binary_op(char op) {
 			stack.push_back(Value::Number(a / b));
 		}
 		else {
-			std::cerr << "Division by zero!\n";
+			runtimeError("Division by zero!\n");
+			return;
+			/*std::cerr << "Division by zero!\n";*/
 		}
 		break;
 	}
