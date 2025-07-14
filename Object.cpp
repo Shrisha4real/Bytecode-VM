@@ -22,4 +22,4 @@ const std::string& ObjString::get_string() {
 ObjString& ObjString::operator+=(const ObjString& obj) {
 	s = s + obj.s;
 	return *this;
-}
+}  

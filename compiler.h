@@ -65,6 +65,12 @@ public:
 	void emit_constant(Value&& value);
 	uint8_t make_constant(Value&& value);
 	ParseRule* get_rule(token_type type);
+	void declaration();
+	void statement();
+	bool match(token_type type);
+	bool check(token_type type) const;
+	void print_statement();
+
 
 private:
 	inline void debug_print_code() {

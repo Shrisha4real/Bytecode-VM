@@ -46,7 +46,7 @@ public:
 	Object* as_obj() const;
 	std::unique_ptr<Object> transfer_obj();
 	//ObjString* as_string() const;
-	
+	static void print_value(const Value& value);
 
 
 	static bool valuesEqual(Value& a, Value& b);

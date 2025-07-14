@@ -59,8 +59,9 @@ Compiler::Compiler(const std::string& source, Chunk* chunk) : source(source), co
 bool Compiler::compile() {
 
 	this->parser->advance();//sets the first token as the current token to be parsed
-	this->expression();
-	this->parser->consume(token_type::TOKEN_EOF, "Expect end of an expression");
+	while (!match(token_type::TOKEN_EOF)) {
+		declaration();
+	}
 	this->end_compiler();
 	return !this->parser->had_error;
 
@@ -231,4 +232,30 @@ void Compiler::string() {
 
 ParseRule* Compiler::get_rule(token_type type) {
 	return &this->rules[type];
+}
+void Compiler::declaration() {
+	statement();
+}
+
+void Compiler::statement() {
+	if (match(token_type::TOKEN_PRINT)){
+		print_statement();
+	}
+}
+
+bool Compiler::match(token_type type) {
+	if (!check(type)) return false;
+	this->parser->advance();
+	return true;
+}
+
+bool Compiler::check(token_type type) const{
+	return this->parser->current.type == type;
+}
+
+void Compiler::print_statement() {
+	this->expression();
+	this->parser->consume(TOKEN_SEMICOLON, "Expect ';' after value.");
+	this->emit_byte(OpCode::OP_PRINT);
+
 }

@@ -121,9 +121,16 @@ InterpretResult VM::run() {
 			stack.push_back(Value::Bool(is_falsey(back)));
 			break;
 		}
+
+		case OpCode::OP_PRINT: {
+			Value::print_value(pop());
+			std::cout << std::endl;
+			break;
+		}
+
 		//FIXME: if the back of the stack is a bool like true then this doesnt work
 		case OpCode::OP_RETURN: {
-			if (stack.empty()) {
+			/*if (stack.empty()) {
 				return InterpretResult::INTERPRET_RUNTIME_ERROR;
 			}
 			Value top = std::move(stack.back());
@@ -141,7 +148,7 @@ InterpretResult VM::run() {
 				else {
 					std::cout << arg;
 				}
-				}, top.data);
+				}, top.data);*/
 			std::cout << std::endl;
 			return InterpretResult::INTERPRET_OK;
 		}
@@ -152,7 +159,7 @@ InterpretResult VM::run() {
 	std::cout << "return run()\n\n";
 }
 Value VM::read_constant() {
-	return std::move((chunk->values).at(VM::read_byte()));
+	return std::move((chunk->values).at(read_byte()));
 }
 void VM::binary_op(char op) {
 	if (!Value::is_number(this->peek(0)) || !Value::is_number(this->peek(1))) {
@@ -271,4 +278,10 @@ void VM::concatinate() {
 
 	// Push back the modified a
 	stack.push_back(Value::Obj(std::move(a)));
+}
+
+Value VM::pop() {
+	Value val = std::move(stack.back());
+	stack.pop_back();
+	return val;
 }

@@ -85,3 +85,20 @@ bool Value::valuesEqual(Value& a, Value& b) {
     std::cerr << "shouldnt be reaching end of valEqual\n";
     return false;
 }
+
+void Value::print_value(const Value& value) {
+    std::visit([](const auto& arg) {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, std::monostate>) {
+            std::cout << "nil";
+        }
+        else if constexpr (std::is_same_v<T, std::unique_ptr<Object>>) {
+            std::cout << "object:\t";
+            arg->print();  
+        }
+        else {
+            std::cout << arg;
+        }
+        }, value.data);
+    std::cout << std::endl;
+}

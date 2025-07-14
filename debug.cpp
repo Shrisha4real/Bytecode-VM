@@ -48,6 +48,8 @@ int Debug::disassemble_instruction(const Chunk* chunk,  int offset) {
 		return	simple_instruction("OP_LESS", offset);
 	case OpCode::OP_EQUAL:
 		return	simple_instruction("OP_EQUAL", offset);
+	case OpCode::OP_PRINT:
+		return simple_instruction("OP_PRINT", offset);
 
 	
 

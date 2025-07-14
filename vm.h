@@ -28,6 +28,8 @@ public:
 	Value& peek(int distance);
 	void concatinate();
 	bool is_falsey(Value& value);
+	Value pop();
+
 private:
 	
 
