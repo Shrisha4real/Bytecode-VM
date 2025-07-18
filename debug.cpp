@@ -50,6 +50,11 @@ int Debug::disassemble_instruction(const Chunk* chunk,  int offset) {
 		return	simple_instruction("OP_EQUAL", offset);
 	case OpCode::OP_PRINT:
 		return simple_instruction("OP_PRINT", offset);
+	case OpCode::OP_POP:
+		return simple_instruction("OP_POP", offset);
+	case OpCode::OP_DEFINE_GLOBAL:
+		return constant_instruction(chunk, "OP_DEFINE_GLOBAL", offset);
+
 
 	
 
@@ -72,7 +77,7 @@ int Debug::constant_instruction(const Chunk* chunk , std::string name,  int offs
 		if constexpr (std::is_same_v<T, std::monostate>) {
 			std::cout << "nil";
 		}
-		else if constexpr (std::is_same_v< T, std::unique_ptr<Object>>) {
+		else if constexpr (std::is_same_v< T, std::shared_ptr<Object>>) {
 			std::cout << "object";
 		}
 		else {

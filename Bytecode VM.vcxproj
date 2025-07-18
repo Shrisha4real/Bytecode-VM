@@ -136,6 +136,8 @@
     <ClInclude Include="ParseRule.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Scanner.h" />
+    <ClInclude Include="StringInterner.h" />
+    <ClInclude Include="Table.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="Value.h" />
     <ClInclude Include="vm.h" />
@@ -150,6 +152,8 @@
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="ParseRule.cpp" />
     <ClCompile Include="Scanner.cpp" />
+    <ClCompile Include="StringInterner.cpp" />
+    <ClCompile Include="Table.cpp" />
     <ClCompile Include="Token.cpp" />
     <ClCompile Include="Value.cpp" />
     <ClCompile Include="vm.cpp" />

@@ -7,7 +7,7 @@
 #include "vm.h"
 
 
-VM::VM():chunk(new Chunk()){
+VM::VM() :chunk(new Chunk()) {
 	ip = (this->chunk->code).begin();
 };
 
@@ -28,7 +28,7 @@ InterpretResult VM::run() {
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
 				}
-				else if constexpr (std::is_same_v< T,std::unique_ptr<Object>>) {
+				else if constexpr (std::is_same_v< T,std::shared_ptr<Object>>) {
 					std::cout << "object:\t";
 					arg->print();
 				}
@@ -46,16 +46,16 @@ InterpretResult VM::run() {
 		switch (instruction = read_byte()) {
 
 		case OpCode::OP_CONSTANT: {
-			Value constant = read_constant();
+			Value& constant = read_constant();
 			stack.push_back(std::move(constant));
-			std::cout << "run() -> case:OP_CONSTANT ";
+  			std::cout << "run() -> case:OP_CONSTANT ";
 
 			std::visit([](auto&& arg) {
 				using T = std::decay_t<decltype(arg)>;
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
 				}
-				else if constexpr (std::is_same_v< T, std::unique_ptr<Object>>) {
+				else if constexpr (std::is_same_v< T, std::shared_ptr<Object>>) {
 
 					arg->print();
 				}
@@ -127,6 +127,17 @@ InterpretResult VM::run() {
 			std::cout << std::endl;
 			break;
 		}
+		case OpCode::OP_POP: {
+			Value popped = pop();
+			break; 
+		}
+		case OpCode::OP_DEFINE_GLOBAL: {
+
+			std::shared_ptr<ObjString>  name = read_string();
+			//globals.insert({ name , pop()});
+			
+			break;
+		}
 
 		//FIXME: if the back of the stack is a bool like true then this doesnt work
 		case OpCode::OP_RETURN: {
@@ -141,7 +152,7 @@ InterpretResult VM::run() {
 				if constexpr (std::is_same_v<T, std::monostate>) {
 					std::cout << "nil";
 				}
-				else if constexpr (std::is_same_v< T, std::unique_ptr<Object>>) {
+				else if constexpr (std::is_same_v< T, std::shared_ptr<Object>>) {
 					std::cout << "object:\t";
 					arg->print();
 				}
@@ -158,9 +169,12 @@ InterpretResult VM::run() {
 	}
 	std::cout << "return run()\n\n";
 }
-Value VM::read_constant() {
-	return std::move((chunk->values).at(read_byte()));
+
+ Value& VM::read_constant() {
+	return (chunk->values).at(read_byte());
 }
+
+
 void VM::binary_op(char op) {
 	if (!Value::is_number(this->peek(0)) || !Value::is_number(this->peek(1))) {
 		runtimeError("Operands must be numbers.");
@@ -216,7 +230,7 @@ void VM::binary_op(char op) {
  */
 InterpretResult VM::intepret(const std::string& source) {
 
-	Compiler compiler(source , this->chunk);
+	Compiler compiler(source , this->chunk,this->strings);
 
 
 	
@@ -255,9 +269,9 @@ bool VM::is_falsey(Value& value) {
 	return (Value::is_nil(value) ||Value::is_bool(value));
 }
 
-//FIXME: The ObjString pointer is pointing to the unique_ptr
+//FIXME: The ObjString pointer is pointing to the shared_ptr
 void VM::concatinate() {
-	std::unique_ptr<Object> b = std::move(stack.back()).transfer_obj();
+	std::shared_ptr<Object> b = std::move(stack.back()).transfer_obj();
 	ObjString* b_ptr = dynamic_cast<ObjString*>(b.get());
 	if (!b_ptr) {
 		std::cout << "the object isn't of type string\n";
@@ -265,7 +279,7 @@ void VM::concatinate() {
 	}
 	stack.pop_back();
 
-	std::unique_ptr<Object> a = std::move(stack.back()).transfer_obj();
+	std::shared_ptr<Object> a = std::move(stack.back()).transfer_obj();
 	ObjString* a_ptr = dynamic_cast<ObjString*>(a.get());
 	if (!a_ptr) {
 		std::cout << "the object isn't of type string\n";
@@ -284,4 +298,13 @@ Value VM::pop() {
 	Value val = std::move(stack.back());
 	stack.pop_back();
 	return val;
+}
+
+std::shared_ptr<ObjString>  VM::read_string() {
+	Value& top_value = read_constant(); 
+	if (Value::is_string(top_value)) {
+		return Value::as_string(top_value); 
+	}
+	std::cerr << "Value is not a string.\n";
+	return nullptr;
 }

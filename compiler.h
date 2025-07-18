@@ -4,7 +4,7 @@
 #include<vector>
 #include <cstddef>
 #include<iostream>
-
+#include<memory>
 #include "chunk.h"
 #include "Parser.h"
 #include "common.h"
@@ -15,6 +15,7 @@
 #include "debug.h"
 #include "Value.h"
 #include"Object.h"
+#include "StringInterner.h"
 
 
 class Compiler {
@@ -27,8 +28,9 @@ public:
 	Parser* parser;
 	Scanner* scanner;
 	std::vector<ParseRule> rules;
+	std::shared_ptr<StringInterner>string_table;
 	
-	Compiler(const std::string& source, Chunk* chunk);
+	Compiler(const std::string& source, Chunk* chunk, std::shared_ptr<StringInterner>string_table);
 	// constructor
 
 
@@ -70,6 +72,12 @@ public:
 	bool match(token_type type);
 	bool check(token_type type) const;
 	void print_statement();
+	void expression_statement();
+	void synchronise();
+	void var_declaration();
+	uint8_t parse_variable(std::string message);
+	uint8_t identifier_constant(Token& name);
+	void define_variable(uint8_t global);
 
 
 private:

@@ -6,7 +6,7 @@
  * Purpose : creates a Scanner and a parser onjects and sets all the parsing rules got every keyword
  * Returns : InterpretResult - the result of program execution.
  */
-Compiler::Compiler(const std::string& source, Chunk* chunk) : source(source), compiling_chunk(chunk), rules(static_cast<size_t>(token_type::TOKEN_EOF) + 1) {
+Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<StringInterner>string_table) : source(source), compiling_chunk(chunk), rules(static_cast<size_t>(token_type::TOKEN_EOF) + 1), string_table(string_table) {
 	scanner = new Scanner(this->source);
 	parser = new Parser(this->scanner);
 	rules[token_type::TOKEN_LEFT_PAREN] = {std::bind(&Compiler::grouping, this), nullptr, Precedence::PREC_CALL };
@@ -227,7 +227,7 @@ void Compiler::grouping() {
 }
 
 void Compiler::string() {
-		emit_constant(Value::Obj(std::unique_ptr<Object>{ new ObjString(this->parser->previous.start + 1, this->parser->previous.length - 2) }));
+	emit_constant(Value::Obj(std::shared_ptr<Object>{ string_table->copy_string(this->parser->previous.start + 1, this->parser->previous.length - 2) }));
 }
 
 ParseRule* Compiler::get_rule(token_type type) {
@@ -235,11 +235,16 @@ ParseRule* Compiler::get_rule(token_type type) {
 }
 void Compiler::declaration() {
 	statement();
+	if (this->parser->panic_mode) synchronise();
+
 }
 
 void Compiler::statement() {
 	if (match(token_type::TOKEN_PRINT)){
 		print_statement();
+	}
+	else {
+		expression_statement();
 	}
 }
 
@@ -258,4 +263,72 @@ void Compiler::print_statement() {
 	this->parser->consume(TOKEN_SEMICOLON, "Expect ';' after value.");
 	this->emit_byte(OpCode::OP_PRINT);
 
+}
+void Compiler::expression_statement() {
+	expression();
+	this->parser->consume(token_type::TOKEN_SEMICOLON, "Expect ';' after expression.");
+	emit_byte(OP_POP);// add this in the opCode
+}
+
+void Compiler::synchronise() {
+	parser->panic_mode = false;
+
+	while (parser->current.type != token_type::TOKEN_EOF) {
+		if (parser->previous.type == token_type::TOKEN_SEMICOLON) return;
+		switch (parser->current.type) {
+		case token_type::TOKEN_CLASS:
+		case token_type::TOKEN_FUN:
+		case token_type::TOKEN_VAR:
+		case token_type::TOKEN_FOR:
+		case token_type::TOKEN_IF:
+		case token_type::TOKEN_WHILE:
+		case token_type::TOKEN_PRINT:
+		case token_type::TOKEN_RETURN:
+			return;
+
+		default:
+			;
+		}
+
+		this->parser->advance();
+	}
+}
+
+
+
+void Compiler::var_declaration() {
+
+	uint8_t global = parse_variable("Expect variable name.");
+
+	if (match(token_type::TOKEN_EQUAL)) {
+
+		expression();
+
+	}
+	else {
+
+		emit_byte(OpCode::OP_NIL);
+
+	}
+
+	this->parser->consume(token_type::TOKEN_SEMICOLON,"Expect ';' after variable declaration.");
+	define_variable(global);
+
+}
+
+uint8_t Compiler::parse_variable(std::string message) {
+
+	this->parser->consume(token_type::TOKEN_VAR, "variable declaration should start with var");
+
+	return identifier_constant(parser->previous);
+
+}
+
+uint8_t Compiler::identifier_constant(Token& name) {
+	auto str_obj = std::make_unique<ObjString>(name.start, name.length);
+	return make_constant(Value::Obj(std::move(str_obj)));
+}
+
+void Compiler::define_variable(uint8_t global) {
+	emit_bytes(OpCode::OP_DEFINE_GLOBAL, global);
 }

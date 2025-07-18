@@ -2,6 +2,7 @@
 #include<iostream>
 #include <variant>
 #include "Object.h"
+#include"vm.h"
 
 enum class ValueType{BOOL, NUMBER , NIL , OBJ};
 
@@ -16,9 +17,10 @@ enum class ValueType{BOOL, NUMBER , NIL , OBJ};
 class Value {
 	
 public:
+	std::shared_ptr<VM>vm;
 	ValueType type;
-	std::variant < std::monostate, bool, double, std::unique_ptr<Object>> data;
-	Value(ValueType t, std::variant<std::monostate, bool, double, std::unique_ptr<Object>> d);
+	std::variant < std::monostate, bool, double, std::shared_ptr<Object>> data;
+	Value(ValueType t, std::variant<std::monostate, bool, double, std::shared_ptr<Object>> d);
 	Value(Value&& other) noexcept
 		: type(other.type), data(std::move(other.data)) {
 	}
@@ -39,12 +41,13 @@ public:
 	static Value Bool(bool b);
 	static Value Nil();
 	static Value Number(double d);
-	static Value Obj(std::unique_ptr<Object>obj);
+	static Value Obj(std::shared_ptr<Object>obj);
 	bool as_bool() const;
 	double as_number() const;
 	bool as_nil() const;
-	Object* as_obj() const;
-	std::unique_ptr<Object> transfer_obj();
+	std::shared_ptr<Object> as_obj() const;
+	static std::shared_ptr<ObjString> as_string(const Value& value);
+	std::shared_ptr<Object> transfer_obj();
 	//ObjString* as_string() const;
 	static void print_value(const Value& value);
 

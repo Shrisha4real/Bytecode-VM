@@ -10,15 +10,17 @@
 #include<algorithm>
 #include<memory>
 #include<utility>
-#include "Value.h"
+#include<unordered_map>
+#include"StringInterner.h"
+
 class VM
 {
 	Chunk* chunk;
 	std::vector<uint8_t>::iterator ip;
 	inline uint8_t read_byte() ;
-	inline Value read_constant();
+	inline Value& read_constant();
 	std::vector<Value>stack;
-	
+	std::shared_ptr<StringInterner> strings;
 public:
 	VM();	
 	InterpretResult run();
@@ -29,6 +31,7 @@ public:
 	void concatinate();
 	bool is_falsey(Value& value);
 	Value pop();
+	std::shared_ptr<ObjString> read_string(); 
 
 private:
 	

@@ -1,4 +1,8 @@
 #include "Object.h"
+ObjString::ObjString( const char* start, int length) :s(start, length), Object(ObjType::OBJ_STRING) {
+	
+};
+
 void ObjString::print() const { // The print method you want to access
 	std::cout << s;
 }
@@ -23,3 +27,31 @@ ObjString& ObjString::operator+=(const ObjString& obj) {
 	s = s + obj.s;
 	return *this;
 }  
+//FNV-1a hash function
+uint32_t ObjString::hash_string(const std::string& s) {
+	uint32_t hash = 2166136261u;
+	for (const char c : s) {
+		hash ^= static_cast<uint8_t>(c);
+		hash *= 16777619;
+	}
+	return hash;
+}
+
+bool ObjString::operator==(const ObjString& other) {
+	return this->s == other.s;
+}
+bool ObjString::operator!=(const ObjString& other) {
+	return this->s != other.s;
+}
+ObjString::ObjString(const ObjString& other) : Object(ObjType::OBJ_STRING) {
+	this->s = other.s;
+	this->hash = other.hash;
+};
+
+const std::string& ObjString::get_string() const {
+	return s;
+}
+
+const uint32_t ObjString::get_hash() {
+	return hash_string(this->get_string());
+}
