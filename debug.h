@@ -2,9 +2,10 @@
 #include<string>
 #include<iostream>
 #include <iomanip>
+class Chunk;
 
-#include "chunk.h"
 #include "common.h"
+
 class Debug {
 public:
 	static void disassemble_chuck(const Chunk* chunk, std::string name) ;

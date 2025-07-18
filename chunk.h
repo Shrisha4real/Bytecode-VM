@@ -2,8 +2,7 @@
 #include "common.h"
 #include"Value.h"
 #include<vector>
-//#include "value.h"
-
+class Value;
 
 
 class Chunk {

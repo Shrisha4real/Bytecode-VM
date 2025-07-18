@@ -13,6 +13,11 @@
 #include<unordered_map>
 #include"StringInterner.h"
 
+class StringInterner;
+class Chunk;
+class ObjString;
+
+
 class VM
 {
 	Chunk* chunk;

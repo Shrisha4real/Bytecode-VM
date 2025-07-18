@@ -1,6 +1,6 @@
 #include "Table.h"
 
-uint32_t Table::hash_string(const std::shared_ptr<ObjString>& key) const {
+uint32_t Table::hash_string(const std::shared_ptr<ObjString> key) const {
     uint32_t hash = 2166136261u;
     for (char c : key->get_string()) {
         hash ^= static_cast<uint8_t>(c);
@@ -44,7 +44,7 @@ void Table::resize() {
         }
     }
 }
-Table::Table(size_t capacity = 3)
+Table::Table(size_t capacity)
     : table(capacity), size(0) {
 }
 bool Table::insert(const std::shared_ptr<ObjString>& key, const std::shared_ptr<Value>& value) {

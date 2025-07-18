@@ -1,6 +1,11 @@
 #pragma once
 #include<memory>
 #include"Table.h"
+#include"Object.h"
+
+class Table;
+class ObjString;
+
 
 class StringInterner
 {

@@ -17,6 +17,11 @@
 #include"Object.h"
 #include "StringInterner.h"
 
+class Chuck;
+class Parser;
+class Scanner;
+class ParseRule;
+class StringInterner;
 
 class Compiler {
 public:

@@ -1,9 +1,13 @@
 #pragma once
+class ObjString;
+class Value;
 #include <vector>
 #include <memory>
 #include <optional>
 #include "Value.h"
 #include "Object.h"
+
+
 
 class Table {
 private:
@@ -13,14 +17,14 @@ private:
         bool occupied;
         bool deleted;
 
-        Entry() : occupied(false), deleted(false) {}
+        Entry() : key(nullptr) , value(nullptr) , occupied(false), deleted(false) {}
     };
 
     std::vector<Entry> table;
     size_t size;
     const double max_load_factor = 0.75;
  
-     uint32_t hash_string(const std::shared_ptr<ObjString>& key) const;
+     uint32_t hash_string(const std::shared_ptr<ObjString> key) const;
      std::optional<size_t> find_slot(const std::shared_ptr<ObjString>& key) const;
      void resize();
 

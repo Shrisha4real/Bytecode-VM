@@ -9,6 +9,8 @@
 
 VM::VM() :chunk(new Chunk()) {
 	ip = (this->chunk->code).begin();
+	strings = std::make_shared<StringInterner>();
+
 };
 
 

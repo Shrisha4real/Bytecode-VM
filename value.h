@@ -4,6 +4,9 @@
 #include "Object.h"
 #include"vm.h"
 
+class Object;
+class ObjString;
+class VM;
 enum class ValueType{BOOL, NUMBER , NIL , OBJ};
 
 

@@ -1,7 +1,6 @@
 #pragma once
 #include<string>
 #include<iostream>
-#include"Table.h"
 
 typedef enum {
 	OBJ_STRING,
