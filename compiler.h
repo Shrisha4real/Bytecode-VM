@@ -5,23 +5,17 @@
 #include <cstddef>
 #include<iostream>
 #include<memory>
-#include "chunk.h"
-#include "Parser.h"
-#include "common.h"
-#include "Token.h"
-#include "Scanner.h"
-#include "vm.h"
-#include "ParseRule.h"
-#include "debug.h"
-#include "Value.h"
-#include"Object.h"
-#include "StringInterner.h"
+#include"common.h"
+#include"debug.h"
+#include"Parser.h"
 
-class Chuck;
+class Chunk;
 class Parser;
 class Scanner;
 class ParseRule;
 class StringInterner;
+class Value;
+
 
 class Compiler {
 public:

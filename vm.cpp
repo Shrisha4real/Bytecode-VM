@@ -5,12 +5,16 @@
  ***************************************************************/
 
 #include "vm.h"
-
+#include"StringInterner.h"
+#include "Value.h"
+#include"Table.h"
+#include"Object.h"
+#include"ParseRule.h"
 
 VM::VM() :chunk(new Chunk()) {
 	ip = (this->chunk->code).begin();
 	strings = std::make_shared<StringInterner>();
-
+	globals = std::make_shared<StringInterner>();
 };
 
 
@@ -136,8 +140,8 @@ InterpretResult VM::run() {
 		case OpCode::OP_DEFINE_GLOBAL: {
 
 			std::shared_ptr<ObjString>  name = read_string();
-			//globals.insert({ name , pop()});
-			
+			globals->get_table()->insert(name , peek(0));
+			pop();
 			break;
 		}
 

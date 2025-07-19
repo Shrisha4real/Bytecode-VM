@@ -1,11 +1,16 @@
 #include "StringInterner.h"
+#include"Table.h"
+#include"Object.h"
+#include"common.h"
+#include"Value.h"
 StringInterner::StringInterner() {
     strings = std::make_shared<Table>();
 }
 
 std::shared_ptr<ObjString> StringInterner::allocate_string(const std::string& chars) {
     auto obj = std::make_shared<ObjString>(chars.c_str(), static_cast<int>(chars.size()));
-    strings->insert(obj, std::make_shared<Value>(ValueType::NIL, std::monostate{}));
+    Value nil{ ValueType::NIL, std::monostate{} };
+    strings->insert(obj,nil );
     return obj;
 }
 

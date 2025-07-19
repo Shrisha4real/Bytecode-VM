@@ -5,6 +5,8 @@
  ***************************************************************/
 
 #include"chunk.h"
+#include "common.h"
+#include"Value.h"
 
 size_t Chunk::add_constant( Value&& value) {
 	(this->values).push_back(std::move(value));

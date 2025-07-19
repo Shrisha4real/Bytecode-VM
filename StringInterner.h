@@ -1,8 +1,7 @@
 #pragma once
 #include<memory>
-#include"Table.h"
-#include"Object.h"
-
+#include<string>
+#include"Value.h"
 class Table;
 class ObjString;
 

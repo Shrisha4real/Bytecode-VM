@@ -1,4 +1,6 @@
 #include "Table.h"
+#include "Value.h"
+#include "Object.h"
 
 uint32_t Table::hash_string(const std::shared_ptr<ObjString> key) const {
     uint32_t hash = 2166136261u;
@@ -38,16 +40,16 @@ void Table::resize() {
     table = std::vector<Entry>(old_table.size() * 2);
     size = 0;
 
-    for (const Entry& entry : old_table) {
+    for ( Entry& entry : old_table) {
         if (entry.occupied && !entry.deleted) {
-            insert(entry.key, entry.value);
+            insert(entry.key, (entry.value));
         }
     }
 }
 Table::Table(size_t capacity)
     : table(capacity), size(0) {
 }
-bool Table::insert(const std::shared_ptr<ObjString>& key, const std::shared_ptr<Value>& value) {
+bool Table::insert(const std::shared_ptr<ObjString>& key, Value& value) {
     if (static_cast<double>(size) / table.size() >= max_load_factor) {
         resize();
     }
@@ -63,19 +65,19 @@ bool Table::insert(const std::shared_ptr<ObjString>& key, const std::shared_ptr<
     }
 
     entry.key = key;
-    entry.value = value;
+    entry.value = std::move(value);
     entry.occupied = true;
     entry.deleted = false;
     return true;
 }
 
-std::shared_ptr<Value> Table::find(const std::shared_ptr<ObjString>& key) const {
+Value* Table::find(const std::shared_ptr<ObjString>& key)  {
     auto slot_opt = find_slot(key);
     if (!slot_opt.has_value()) return nullptr;
 
-    const Entry& entry = table[slot_opt.value()];
+    Entry& entry = table[slot_opt.value()];
     if (entry.occupied && !entry.deleted) {
-        return entry.value;
+        return &entry.value;
     } 
 
     return nullptr;

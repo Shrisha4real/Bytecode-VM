@@ -1,5 +1,10 @@
 #include "Value.h"
+#include "Object.h"
+#include"vm.h"
 
+Value:: Value()
+    : type(ValueType::NIL), data(std::monostate{}) {
+}
 Value::Value(ValueType t, std::variant<std::monostate, bool, double, std::shared_ptr<Object>> d)
     : type(t), data(std::move(d)) {
 }

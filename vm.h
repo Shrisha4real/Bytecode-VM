@@ -26,6 +26,7 @@ class VM
 	inline Value& read_constant();
 	std::vector<Value>stack;
 	std::shared_ptr<StringInterner> strings;
+	std::shared_ptr<StringInterner> globals;
 public:
 	VM();	
 	InterpretResult run();

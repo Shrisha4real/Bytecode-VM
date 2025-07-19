@@ -1,5 +1,16 @@
 #include "compiler.h"
 #include <functional> 
+#include "chunk.h"
+#include "Parser.h"
+#include "common.h"
+#include "Token.h"
+#include "Scanner.h"
+#include "vm.h"
+#include "ParseRule.h"
+#include "debug.h"
+#include "Value.h"
+#include"Object.h"
+#include "StringInterner.h"
 
 /*
  * Function: contructor
@@ -234,7 +245,13 @@ ParseRule* Compiler::get_rule(token_type type) {
 	return &this->rules[type];
 }
 void Compiler::declaration() {
-	statement();
+	if (match(token_type::TOKEN_VAR)) {
+		var_declaration();
+	}
+	else
+	{
+		statement();
+	}
 	if (this->parser->panic_mode) synchronise();
 
 }
@@ -299,17 +316,10 @@ void Compiler::synchronise() {
 void Compiler::var_declaration() {
 
 	uint8_t global = parse_variable("Expect variable name.");
-
-	if (match(token_type::TOKEN_EQUAL)) {
-
+	if (match(token_type::TOKEN_EQUAL)) 
 		expression();
-
-	}
-	else {
-
+	else
 		emit_byte(OpCode::OP_NIL);
-
-	}
 
 	this->parser->consume(token_type::TOKEN_SEMICOLON,"Expect ';' after variable declaration.");
 	define_variable(global);

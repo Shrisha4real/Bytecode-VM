@@ -1,6 +1,7 @@
 #include "debug.h"
 #include "common.h"
 #include "chunk.h"
+#include"Value.h"
 void Debug::disassemble_chuck(const Chunk* chunk, std::string name)  {
 	std::cout << "==\t" << name << "\t=="<<std::endl;
 	for (int offset = 0; offset < (chunk->code).size();) {

@@ -1,8 +1,7 @@
 #pragma once
 #include<iostream>
 #include <variant>
-#include "Object.h"
-#include"vm.h"
+
 
 class Object;
 class ObjString;
@@ -23,6 +22,7 @@ public:
 	std::shared_ptr<VM>vm;
 	ValueType type;
 	std::variant < std::monostate, bool, double, std::shared_ptr<Object>> data;
+	Value();
 	Value(ValueType t, std::variant<std::monostate, bool, double, std::shared_ptr<Object>> d);
 	Value(Value&& other) noexcept
 		: type(other.type), data(std::move(other.data)) {

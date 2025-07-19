@@ -4,7 +4,6 @@
 #include <iomanip>
 class Chunk;
 
-#include "common.h"
 
 class Debug {
 public:

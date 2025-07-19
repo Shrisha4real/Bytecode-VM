@@ -1,23 +1,22 @@
 #pragma once
-class ObjString;
-class Value;
+
 #include <vector>
 #include <memory>
 #include <optional>
-#include "Value.h"
-#include "Object.h"
-
-
+#include"Value.h"
+class Object;
+class ObjString;
+class Value;
 
 class Table {
 private:
     struct Entry {
         std::shared_ptr<ObjString> key;
-        std::shared_ptr<Value> value;
+        Value value;
         bool occupied;
         bool deleted;
 
-        Entry() : key(nullptr) , value(nullptr) , occupied(false), deleted(false) {}
+        Entry() : key(nullptr), value(), occupied(false), deleted(false) {}
     };
 
     std::vector<Entry> table;
@@ -30,8 +29,8 @@ private:
 
 public:
     Table(size_t capacity = 3);
-    bool insert(const std::shared_ptr<ObjString>& key, const std::shared_ptr<Value>& value);
-    std::shared_ptr<Value> find(const std::shared_ptr<ObjString>& key) const;
+    bool insert(const std::shared_ptr<ObjString>& key, Value& value);
+    Value* find(const std::shared_ptr<ObjString>& key) ;
     bool remove(const std::shared_ptr<ObjString>& key);
     std::shared_ptr<ObjString> find_string(const std::string& s, uint32_t hash)const;
 
