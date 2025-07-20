@@ -49,19 +49,13 @@ public:
 	void emit_return();
 	// returns the enum OP_RETURN from "common.h" 
 
-	void number();
-	//to compile numbers, 
-	// converts the string into a double and pushes into the bytecode stack
-
-	void grouping();
-	// compile parenthesised experssion
-	// considers that the ( is consumed, processes the reamining part of the expression
-	// consume the ) in the end;
+	void number(bool can_assign);
+	void grouping(bool can_assign);;
 	void expression();
-	void unary();
-	void binary();
-	void literal();
-	void string();
+	void unary(bool can_assign);
+	void binary(bool can_assign);
+	void literal(bool can_assign);
+	void string(bool can_assign);
 	void parse_precedence(Precedence precedence);
 	void emit_constant(Value&& value);
 	uint8_t make_constant(Value&& value);
@@ -77,8 +71,8 @@ public:
 	uint8_t parse_variable(std::string message);
 	uint8_t identifier_constant(Token& name);
 	void define_variable(uint8_t global);
-	void variable();
-	void named_variable(Token name);
+	void variable(bool can_assign);
+	void named_variable(Token name, bool can_assign);
 
 private:
 	inline void debug_print_code() {

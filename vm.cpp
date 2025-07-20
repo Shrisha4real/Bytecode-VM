@@ -155,6 +155,16 @@ InterpretResult VM::run() {
 			break;
 		}
 		//FIXME: if the back of the stack is a bool like true then this doesnt work
+		case OpCode::OP_SET_GLOBAL: {
+			std::shared_ptr<ObjString>  name = read_string();
+			if (globals->get_table()->insert(name, peek(0))) {
+				globals->get_table()->remove(name);
+				runtimeError("undefined variable" + name->get_string());
+				return InterpretResult::INTERPRET_RUNTIME_ERROR;
+			}
+			break;
+		}
+		
 		case OpCode::OP_RETURN: {
 			/*if (stack.empty()) {
 				return InterpretResult::INTERPRET_RUNTIME_ERROR;

@@ -19,6 +19,7 @@
 	OP_POP,
 	OP_DEFINE_GLOBAL,
 	OP_GET_GLOBAL,
+	OP_SET_GLOBAL,
 	OP_RETURN,
 
 };
@@ -67,4 +68,4 @@ typedef enum {
 	INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
-using parse_fn = std::function<void()>;
+using parse_fn = std::function<void(bool can_assign)>;

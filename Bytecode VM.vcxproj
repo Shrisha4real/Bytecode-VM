@@ -144,7 +144,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="chunk.cpp" />
-    <ClCompile Include="common.cpp" />
     <ClCompile Include="compiler.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="main.cpp" />

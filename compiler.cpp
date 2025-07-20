@@ -11,6 +11,8 @@
 #include "Value.h"
 #include"Object.h"
 #include "StringInterner.h"
+using namespace std::placeholders;
+
 
 /*
  * Function: contructor
@@ -20,42 +22,42 @@
 Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<StringInterner>string_table) : source(source), compiling_chunk(chunk), rules(static_cast<size_t>(token_type::TOKEN_EOF) + 1), string_table(string_table) {
 	scanner = new Scanner(this->source);
 	parser = new Parser(this->scanner);
-	rules[token_type::TOKEN_LEFT_PAREN] = {std::bind(&Compiler::grouping, this), nullptr, Precedence::PREC_CALL };
+	rules[token_type::TOKEN_LEFT_PAREN] = {std::bind(&Compiler::grouping, this, _1), nullptr, Precedence::PREC_CALL};
 	rules[token_type::TOKEN_RIGHT_PAREN] = { nullptr,  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_LEFT_BRACE] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_RIGHT_BRACE] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_COMMA] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_DOT] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_MINUS] = { std::bind(&Compiler::unary, this),   std::bind(&Compiler::binary, this),  Precedence::PREC_TERM };
-	rules[token_type::TOKEN_PLUS] = { nullptr,  std::bind(&Compiler::binary, this),  Precedence::PREC_TERM };
+	rules[token_type::TOKEN_MINUS] = { std::bind(&Compiler::unary, this, _1),   std::bind(&Compiler::binary, this, _1),  Precedence::PREC_TERM };
+	rules[token_type::TOKEN_PLUS] = { nullptr,  std::bind(&Compiler::binary, this, _1),   Precedence::PREC_TERM };
 	rules[token_type::TOKEN_SEMICOLON] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_SLASH] = { nullptr,  std::bind(&Compiler::binary, this),  Precedence::PREC_FACTOR };
-	rules[token_type::TOKEN_STAR] = { nullptr,  std::bind(&Compiler::binary, this),  Precedence::PREC_FACTOR };
-	rules[token_type::TOKEN_BANG] = { std::bind(&Compiler::unary,this),  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_BANG_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
+	rules[token_type::TOKEN_SLASH] = { nullptr,  std::bind(&Compiler::binary, this, _1),  Precedence::PREC_FACTOR };
+	rules[token_type::TOKEN_STAR] = { nullptr,  std::bind(&Compiler::binary, this, _1),  Precedence::PREC_FACTOR };
+	rules[token_type::TOKEN_BANG] = { std::bind(&Compiler::unary,this, _1),  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_BANG_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
 	rules[token_type::TOKEN_EQUAL] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_EQUAL_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
-	rules[token_type::TOKEN_GREATER] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
-	rules[token_type::TOKEN_GREATER_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
-	rules[token_type::TOKEN_LESS] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
-	rules[token_type::TOKEN_LESS_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
-	rules[token_type::TOKEN_IDENTIFIER] = { std::bind(&Compiler::variable , this),  nullptr, Precedence::PREC_NONE};
-	rules[token_type::TOKEN_STRING] = { std::bind(&Compiler::string , this),  nullptr, Precedence::PREC_NONE};
-	rules[token_type::TOKEN_NUMBER] = { std::bind(&Compiler::number, this),   nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_EQUAL_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
+	rules[token_type::TOKEN_GREATER] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
+	rules[token_type::TOKEN_GREATER_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
+	rules[token_type::TOKEN_LESS] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
+	rules[token_type::TOKEN_LESS_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
+	rules[token_type::TOKEN_IDENTIFIER] = { std::bind(&Compiler::variable , this, _1),  nullptr, Precedence::PREC_NONE};
+	rules[token_type::TOKEN_STRING] = { std::bind(&Compiler::string , this, _1),  nullptr, Precedence::PREC_NONE};
+	rules[token_type::TOKEN_NUMBER] = { std::bind(&Compiler::number, this, _1),   nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_AND] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_CLASS] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_ELSE] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_FALSE] = { std::bind(&Compiler::literal, this),  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_FALSE] = { std::bind(&Compiler::literal, this, _1),  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_FOR] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_FUN] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_IF] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_NIL] = { std::bind(&Compiler::literal, this),  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_NIL] = { std::bind(&Compiler::literal, this, _1),  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_OR] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_PRINT] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_RETURN] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_SUPER] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_THIS] = { nullptr,  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_TRUE] = { std::bind(&Compiler::literal, this),  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_TRUE] = { std::bind(&Compiler::literal, this, _1),  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_VAR] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_WHILE] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_ERROR] = { nullptr,  nullptr, Precedence::PREC_NONE };
@@ -116,7 +118,7 @@ void Compiler::emit_return() {
  * Function: number
  * Purpose : evaluates and pushes a constant number into the VM
  */
-void Compiler::number() {
+void Compiler::number(bool can_assign) {
 	std::stringstream ss(this->parser->previous.start);
 	double value;
 	ss >> value;
@@ -158,11 +160,15 @@ void Compiler::parse_precedence(Precedence precedence) {
 		this->parser->error("expect an expression");
 		return;
 	}
-	prefix_rule();
+	bool can_assign = precedence <= PREC_ASSIGNMENT;
+	prefix_rule(can_assign);
 	while (precedence <= this->get_rule(this->parser->current.type)->precedence) {
 		this->parser->advance();
 		parse_fn infix_rule = this->get_rule(this->parser->previous.type)->infix;
-		infix_rule();
+		infix_rule(can_assign);
+		if (can_assign && match(TOKEN_EQUAL)) {
+			parser->error("Invalid assignment target.");
+		}
 	}
 }
 
@@ -175,7 +181,7 @@ void Compiler::expression() {
 	this->parse_precedence(Precedence::PREC_ASSIGNMENT);
 }
 
-void Compiler::unary() {
+void Compiler::unary(bool can_assign) {
 	token_type operator_type = this->parser->previous.type;
 	this->parse_precedence(Precedence::PREC_UNARY);
 	switch (operator_type) {
@@ -188,7 +194,7 @@ void Compiler::unary() {
 	}
 
 }
-void Compiler::binary() {
+void Compiler::binary(bool can_assign) {
 	token_type operator_type = parser->previous.type;
 	ParseRule* rule = this->get_rule(operator_type);
 	this->parse_precedence(static_cast<Precedence>(rule->precedence + 1));
@@ -220,7 +226,7 @@ void Compiler::binary() {
  }
 
 
-void Compiler::literal() {
+void Compiler::literal(bool can_assign) {
 	switch (parser->previous.type) {
 	case token_type::TOKEN_FALSE: this->emit_byte(OpCode::OP_FALSE); break;
 	case token_type::TOKEN_NIL: emit_byte(OpCode::OP_NIL); break;
@@ -232,12 +238,12 @@ void Compiler::literal() {
  * Function: grouping
  * Purpose : executes paranthesized expressions
  */
-void Compiler::grouping() {
+void Compiler::grouping(bool can_assign) {
 	Compiler::expression();
 	this->parser->consume(token_type::TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
-void Compiler::string() {
+void Compiler::string(bool can_assign) {
 	emit_constant(Value::Obj(std::shared_ptr<Object>{ string_table->copy_string(this->parser->previous.start + 1, this->parser->previous.length - 2) }));
 }
 
@@ -342,10 +348,15 @@ uint8_t Compiler::identifier_constant(Token& name) {
 void Compiler::define_variable(uint8_t global) {
 	emit_bytes(OpCode::OP_DEFINE_GLOBAL, global);
 }
-void Compiler::variable() {
-	named_variable(parser->previous);
+void Compiler::variable(bool can_assign) {
+	named_variable(parser->previous, can_assign);
 }
-void Compiler::named_variable(Token name) {
+void Compiler::named_variable(Token name,bool can_assign) {
 	uint8_t arg = identifier_constant(name);
-	emit_bytes(OpCode::OP_GET_GLOBAL, arg);
+	if (can_assign && match(token_type::TOKEN_EQUAL)) {
+		expression();
+		emit_bytes(OpCode::OP_SET_GLOBAL, arg);
+	}
+	else
+		emit_bytes(OpCode::OP_GET_GLOBAL, arg);
 }
