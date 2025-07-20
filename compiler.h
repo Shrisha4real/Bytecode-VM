@@ -77,7 +77,8 @@ public:
 	uint8_t parse_variable(std::string message);
 	uint8_t identifier_constant(Token& name);
 	void define_variable(uint8_t global);
-
+	void variable();
+	void named_variable(Token name);
 
 private:
 	inline void debug_print_code() {

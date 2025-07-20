@@ -1,4 +1,8 @@
 #include "Object.h"
+Object::Object(const Object& other) {
+	this->type = other.type;
+}
+
 ObjString::ObjString( const char* start, int length) :s(start, length), Object(ObjType::OBJ_STRING) {
 	
 };
@@ -54,4 +58,8 @@ const std::string& ObjString::get_string() const {
 
 const uint32_t ObjString::get_hash() {
 	return hash_string(this->get_string());
+}
+
+std::shared_ptr<Object> ObjString::clone() const  {
+	return std::make_shared<ObjString>(*this); 
 }

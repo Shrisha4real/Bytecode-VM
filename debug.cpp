@@ -55,7 +55,8 @@ int Debug::disassemble_instruction(const Chunk* chunk,  int offset) {
 		return simple_instruction("OP_POP", offset);
 	case OpCode::OP_DEFINE_GLOBAL:
 		return constant_instruction(chunk, "OP_DEFINE_GLOBAL", offset);
-
+	case OpCode::OP_GET_GLOBAL:
+		return constant_instruction(chunk, "OP_GET_GLOBAL",  offset);
 
 	
 

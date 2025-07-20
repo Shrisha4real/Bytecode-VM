@@ -39,7 +39,7 @@ Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<Str
 	rules[token_type::TOKEN_GREATER_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
 	rules[token_type::TOKEN_LESS] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
 	rules[token_type::TOKEN_LESS_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this), Precedence::PREC_EQUALITY };
-	rules[token_type::TOKEN_IDENTIFIER] = { nullptr,  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_IDENTIFIER] = { std::bind(&Compiler::variable , this),  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_STRING] = { std::bind(&Compiler::string , this),  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_NUMBER] = { std::bind(&Compiler::number, this),   nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_AND] = { nullptr,  nullptr, Precedence::PREC_NONE };
@@ -317,7 +317,7 @@ void Compiler::var_declaration() {
 
 	uint8_t global = parse_variable("Expect variable name.");
 	if (match(token_type::TOKEN_EQUAL)) 
-		expression();
+ 		expression();
 	else
 		emit_byte(OpCode::OP_NIL);
 
@@ -328,7 +328,7 @@ void Compiler::var_declaration() {
 
 uint8_t Compiler::parse_variable(std::string message) {
 
-	this->parser->consume(token_type::TOKEN_VAR, "variable declaration should start with var");
+	this->parser->consume(token_type::TOKEN_IDENTIFIER, "variable declaration should start with var");
 
 	return identifier_constant(parser->previous);
 
@@ -341,4 +341,11 @@ uint8_t Compiler::identifier_constant(Token& name) {
 
 void Compiler::define_variable(uint8_t global) {
 	emit_bytes(OpCode::OP_DEFINE_GLOBAL, global);
+}
+void Compiler::variable() {
+	named_variable(parser->previous);
+}
+void Compiler::named_variable(Token name) {
+	uint8_t arg = identifier_constant(name);
+	emit_bytes(OpCode::OP_GET_GLOBAL, arg);
 }

@@ -11,9 +11,10 @@ class Object
 	ObjType type{};
 public:
 	Object(ObjType type) :type(type) {};
-
+	Object(const Object& other);
 	virtual void print() const = 0;
 	virtual bool compare(const Object* other) const =0 ;
+	virtual std::shared_ptr<Object> clone() const = 0;
 	ObjType obj_type() const;
 	virtual ~Object() = default;
 };
@@ -30,6 +31,7 @@ public:
 	const std::string& get_string() const;
 	virtual void print() const override;
 	virtual bool compare(const Object* other) const override;
+	virtual std::shared_ptr<Object> clone() const override;
 	const std::string& get_string();
 	const uint32_t get_hash();
 	static uint32_t hash_string(const std::string& s);

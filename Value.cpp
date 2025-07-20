@@ -9,7 +9,13 @@ Value::Value(ValueType t, std::variant<std::monostate, bool, double, std::shared
     : type(t), data(std::move(d)) {
 }
 
-
+Value Value::clone() const {
+    if (std::holds_alternative<std::shared_ptr<Object>>(data)) {
+        std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(data);
+        return Value(type, std::shared_ptr<Object>(obj->clone())); // assuming Object is copyable
+    }
+    return Value(type, data);
+}
 
 Value Value::Nil() {
     return { ValueType::NIL, std::monostate{} };

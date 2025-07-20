@@ -39,7 +39,7 @@ public:
 	// Delete copy constructor to be explicit
 	Value(const Value&) = delete;
 	Value& operator=(const Value&) = delete;
-
+	Value clone() const;
 
 	static Value Bool(bool b);
 	static Value Nil();
