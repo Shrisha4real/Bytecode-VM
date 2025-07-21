@@ -1,5 +1,8 @@
-var breakfast = "Dosa";
-var beverage = "Tea";
-breakfast = "Idli with " + beverage;
-
-print breakfast;
+{
+x =1;
+	{
+		y=2;
+		print x;
+	}
+	print x;
+}

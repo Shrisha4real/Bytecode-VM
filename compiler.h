@@ -24,21 +24,25 @@ class Token;
 
 constexpr int UINT8_COUNT = UINT8_MAX + 1;
 class Local {
+	
+public:
 	Token name;
 	int depth;
-public:
 	Local() : name(Token{}), depth(0) {};
 	Local(Token name) : name(name), depth(0) {};
 };
 
 class LocalCompiler {
-	std::array<Local, UINT8_COUNT> locals;
 	int local_count;
 	int scope_depth;
 public:
+	std::array<Local, UINT8_COUNT> locals;
+
 	LocalCompiler();
 	inline void increment_depth();
 	inline void decrement_depth();
+	const int& get_scope_depth() const;
+	const int& get_local_count() const;
 
 };
 
@@ -102,6 +106,8 @@ public:
 	void begin_scope();
 	void block();
 	void end_scope();
+	void declare_variable();
+	void add_local(Token name);
 
 
 private:

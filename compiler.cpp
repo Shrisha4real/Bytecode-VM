@@ -273,7 +273,7 @@ void Compiler::statement() {
 		end_scope();
 	}
 	else {
-		expression_statement();
+ 		expression_statement();
 	}
 }
 
@@ -352,6 +352,8 @@ uint8_t Compiler::identifier_constant(Token& name) {
 }
 
 void Compiler::define_variable(uint8_t global) {
+	if (current->get_scope_depth() > 0)
+		return;
 	emit_bytes(OpCode::OP_DEFINE_GLOBAL, global);
 }
 void Compiler::variable(bool can_assign) {
@@ -379,6 +381,10 @@ void Compiler::begin_scope() {
 void Compiler::end_scope() {
 	current->decrement_depth();
 }
+void Compiler::declare_variable() {
+	if (current->get_scope_depth() == 0) return;
+	Token* name = &parser->previous;
+}
 //FIXME the locals array is uninitialized
 
 LocalCompiler::LocalCompiler() : local_count(0), scope_depth(0), locals() {};
@@ -388,4 +394,19 @@ void LocalCompiler::increment_depth() {
 }
 void LocalCompiler::decrement_depth() {
 	scope_depth--;
+}
+const int& LocalCompiler::get_scope_depth()const {
+	return scope_depth;
+}
+const int& LocalCompiler::get_local_count()const {
+	return local_count;
+}
+void Compiler::add_local(Token name) {
+	if (current->get_local_count() == UINT8_COUNT) {
+		parser->error("Too many local variables in function.");
+		return;
+	}
+	current->locals[current->get_local_count()].name = name;
+	current->locals[current->get_local_count()].depth = current->get_scope_depth();
+
 }

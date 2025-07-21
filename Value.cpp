@@ -104,7 +104,7 @@ void Value::print_value(const Value& value) {
             std::cout << "nil";
         }
         else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
-            std::cout << "object:\t";
+            
             arg->print();  
         }
         else {
