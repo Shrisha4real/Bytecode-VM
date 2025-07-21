@@ -8,6 +8,9 @@
 #include"common.h"
 #include"debug.h"
 #include"Parser.h"
+#include <array>
+
+
 
 class Chunk;
 class Parser;
@@ -15,13 +18,36 @@ class Scanner;
 class ParseRule;
 class StringInterner;
 class Value;
+class LocalCompiler;
+class Local;
+class Token;
+
+constexpr int UINT8_COUNT = UINT8_MAX + 1;
+class Local {
+	Token name;
+	int depth;
+public:
+	Local() : name(Token{}), depth(0) {};
+	Local(Token name) : name(name), depth(0) {};
+};
+
+class LocalCompiler {
+	std::array<Local, UINT8_COUNT> locals;
+	int local_count;
+	int scope_depth;
+public:
+	LocalCompiler();
+	inline void increment_depth();
+	inline void decrement_depth();
+
+};
 
 
 class Compiler {
 public:
 	  // or whatever signature you're using
 
-	
+	std::shared_ptr<LocalCompiler> current;
 	const std::string& source;
 	Chunk* compiling_chunk;
 	Parser* parser;
@@ -73,6 +99,10 @@ public:
 	void define_variable(uint8_t global);
 	void variable(bool can_assign);
 	void named_variable(Token name, bool can_assign);
+	void begin_scope();
+	void block();
+	void end_scope();
+
 
 private:
 	inline void debug_print_code() {
@@ -81,4 +111,5 @@ private:
 		}
 	};
 };
+
 

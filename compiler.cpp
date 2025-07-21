@@ -22,6 +22,7 @@ using namespace std::placeholders;
 Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<StringInterner>string_table) : source(source), compiling_chunk(chunk), rules(static_cast<size_t>(token_type::TOKEN_EOF) + 1), string_table(string_table) {
 	scanner = new Scanner(this->source);
 	parser = new Parser(this->scanner);
+	current = std::make_shared<LocalCompiler>();
 	rules[token_type::TOKEN_LEFT_PAREN] = {std::bind(&Compiler::grouping, this, _1), nullptr, Precedence::PREC_CALL};
 	rules[token_type::TOKEN_RIGHT_PAREN] = { nullptr,  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_LEFT_BRACE] = { nullptr,  nullptr, Precedence::PREC_NONE };
@@ -266,6 +267,11 @@ void Compiler::statement() {
 	if (match(token_type::TOKEN_PRINT)){
 		print_statement();
 	}
+	else if (match(token_type::TOKEN_LEFT_BRACE)) {
+		begin_scope();
+		block();
+		end_scope();
+	}
 	else {
 		expression_statement();
 	}
@@ -359,4 +365,27 @@ void Compiler::named_variable(Token name,bool can_assign) {
 	}
 	else
 		emit_bytes(OpCode::OP_GET_GLOBAL, arg);
+}
+void Compiler::block() {
+	while (!check(token_type::TOKEN_RIGHT_BRACE) && !check(token_type::TOKEN_EOF)) {
+		declaration();
+	}
+	parser->consume(token_type::TOKEN_RIGHT_BRACE, "Expect '}' after block.");
+}
+void Compiler::begin_scope() {
+	current->increment_depth();
+}
+
+void Compiler::end_scope() {
+	current->decrement_depth();
+}
+//FIXME the locals array is uninitialized
+
+LocalCompiler::LocalCompiler() : local_count(0), scope_depth(0), locals() {};
+
+void LocalCompiler::increment_depth() {
+	scope_depth++;
+}
+void LocalCompiler::decrement_depth() {
+	scope_depth--;
 }

@@ -24,8 +24,11 @@ class ObjString : public Object{
 	
 public:
 	ObjString(const char* start, int length);
-	ObjString& operator +=(const ObjString& b); 
+	ObjString(const std::string& s);
 	ObjString(const ObjString& other);
+
+	ObjString& operator +=(const ObjString& b); 
+	ObjString operator+(const ObjString& other) const;
 	bool operator==(const ObjString& other);
 	bool operator!=(const ObjString& other);
 	const std::string& get_string() const;

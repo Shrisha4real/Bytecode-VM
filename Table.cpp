@@ -50,6 +50,7 @@ Table::Table(size_t capacity)
     : table(capacity), size(0) {
 }
 bool Table::insert(const std::shared_ptr<ObjString>& key, Value& value) {
+
     if (static_cast<double>(size) / table.size() >= max_load_factor) {
         resize();
     }
@@ -60,15 +61,17 @@ bool Table::insert(const std::shared_ptr<ObjString>& key, Value& value) {
     size_t index = slot_opt.value();
     Entry& entry = table[index];
 
-    if (!entry.occupied || entry.deleted) {
-        size++;
-    }
+    
 
     entry.key = key;
     entry.value = std::move(value);
     entry.occupied = true;
     entry.deleted = false;
-    return true;
+    if (!entry.occupied || entry.deleted) {
+        size++;
+        return true;
+    }
+    return false;
 }
 
 Value* Table::find(const std::shared_ptr<ObjString>& key)  {

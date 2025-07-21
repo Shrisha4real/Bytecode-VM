@@ -6,6 +6,7 @@ Object::Object(const Object& other) {
 ObjString::ObjString( const char* start, int length) :s(start, length), Object(ObjType::OBJ_STRING) {
 	
 };
+ObjString::ObjString(const std::string& a) :s(a), Object(ObjType::OBJ_STRING) {};
 
 void ObjString::print() const { // The print method you want to access
 	std::cout << s;
@@ -31,6 +32,11 @@ ObjString& ObjString::operator+=(const ObjString& obj) {
 	s = s + obj.s;
 	return *this;
 }  
+ObjString ObjString::operator+(const ObjString& other) const {
+	std::string combined = s + other.s;
+	return ObjString(combined);
+}
+
 //FNV-1a hash function
 uint32_t ObjString::hash_string(const std::string& s) {
 	uint32_t hash = 2166136261u;

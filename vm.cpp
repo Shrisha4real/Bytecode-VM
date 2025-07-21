@@ -27,7 +27,8 @@ InterpretResult VM::run() {
 	while (true) {
 		
 		std::cout << "run() stackprint\t";
-		for (auto it = stack.begin(); it != stack.end(); it++) {
+		
+		/*for (auto it = stack.begin(); it != stack.end(); it++) {
 			std::cout << "[ ";
 			std::visit([](auto&& arg) {
 				using T = std::decay_t<decltype(arg)>;
@@ -44,7 +45,7 @@ InterpretResult VM::run() {
 				}, it->data);
 
 			std::cout << " ]\t";
-		}
+		}*/
 		std::cout << std::endl;
 		Debug::disassemble_instruction(this->chunk, static_cast<int>(ip - ((this->chunk)->code).begin()));
 	
@@ -296,27 +297,27 @@ bool VM::is_falsey(Value& value) {
 
 //FIXME: The ObjString pointer is pointing to the shared_ptr
 void VM::concatinate() {
-	std::shared_ptr<Object> b = std::move(stack.back()).transfer_obj();
-	ObjString* b_ptr = dynamic_cast<ObjString*>(b.get());
-	if (!b_ptr) {
-		std::cout << "the object isn't of type string\n";
+	// Get the top two values on the stack
+	std::shared_ptr<ObjString> b = Value::as_string(stack.back());
+	if (!b) {
+		std::cerr << "Right operand is not a string\n";
 		return;
 	}
 	stack.pop_back();
 
-	std::shared_ptr<Object> a = std::move(stack.back()).transfer_obj();
-	ObjString* a_ptr = dynamic_cast<ObjString*>(a.get());
-	if (!a_ptr) {
-		std::cout << "the object isn't of type string\n";
+	std::shared_ptr<ObjString> a = Value::as_string(stack.back());
+	if (!a) {
+		std::cerr << "Left operand is not a string\n";
 		return;
 	}
 	stack.pop_back();
 
-	// Modify a with b
-	(*a_ptr) += (*b_ptr);
+	// Create a new ObjString with the concatenated result
+	std::string combined = a->get_string() + b->get_string();  // Combine strings
+	std::shared_ptr<ObjString> result = std::make_shared<ObjString>(combined);
 
-	// Push back the modified a
-	stack.push_back(Value::Obj(std::move(a)));
+	// Push the result back onto the stack
+	stack.push_back(Value::Obj(result));
 }
 
 Value VM::pop() {
