@@ -341,7 +341,8 @@ void Compiler::var_declaration() {
 uint8_t Compiler::parse_variable(std::string message) {
 
 	this->parser->consume(token_type::TOKEN_IDENTIFIER, "variable declaration should start with var");
-
+	declare_variable();
+	if (current->get_scope_depth() > 0) return 0;
 	return identifier_constant(parser->previous);
 
 }
@@ -380,10 +381,25 @@ void Compiler::begin_scope() {
 
 void Compiler::end_scope() {
 	current->decrement_depth();
+	while (current->get_local_count() > 0 && current->locals[current->get_local_count() - 1].depth > current->get_scope_depth()) {
+		emit_byte(OpCode::OP_POP);
+		current->local_count--;
+	}
 }
 void Compiler::declare_variable() {
 	if (current->get_scope_depth() == 0) return;
 	Token* name = &parser->previous;
+ 	for (int i = current->get_local_count() - 1; i >= 0; i--) {
+		Local* local = &current->locals[i];
+		if (local->depth != (-1) && local->depth < current->get_scope_depth()) {
+			break;
+		}
+		if (identifier_equal(name, &local->name)) {
+			parser->error("Already a variable with this name in this scope.");
+
+		}
+	}
+	add_local(name);
 }
 //FIXME the locals array is uninitialized
 
@@ -408,5 +424,10 @@ void Compiler::add_local(Token name) {
 	}
 	current->locals[current->get_local_count()].name = name;
 	current->locals[current->get_local_count()].depth = current->get_scope_depth();
+	current->local_count++;
+}
 
+bool Compiler::identifier_equal(Token* a, Token* b) {
+	if (a->length != b->length) return false;
+	return strncmp(a->start ,b->start, a->length )==0 ? true : false;
 }

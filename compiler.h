@@ -9,6 +9,7 @@
 #include"debug.h"
 #include"Parser.h"
 #include <array>
+#include <cstring> // for strcmp
 
 
 
@@ -33,11 +34,11 @@ public:
 };
 
 class LocalCompiler {
-	int local_count;
+	
 	int scope_depth;
 public:
 	std::array<Local, UINT8_COUNT> locals;
-
+	int local_count;
 	LocalCompiler();
 	inline void increment_depth();
 	inline void decrement_depth();
@@ -108,7 +109,7 @@ public:
 	void end_scope();
 	void declare_variable();
 	void add_local(Token name);
-
+	bool identifier_equal(Token* a, Token* b);
 
 private:
 	inline void debug_print_code() {
