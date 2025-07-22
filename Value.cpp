@@ -123,3 +123,9 @@ std::shared_ptr<ObjString> Value::as_string(const Value& v) {
     std::shared_ptr<ObjString> string = std::dynamic_pointer_cast<ObjString>(obj);
     return string; 
 }
+void Value::set(Value& other) {
+    type = other.type;
+    Value temp = other.clone();
+    data = std::move(temp.data);  
+
+}

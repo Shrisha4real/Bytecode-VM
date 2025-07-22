@@ -53,6 +53,10 @@ int Debug::disassemble_instruction(const Chunk* chunk,  int offset) {
 		return simple_instruction("OP_PRINT", offset);
 	case OpCode::OP_POP:
 		return simple_instruction("OP_POP", offset);
+	case OpCode::OP_GET_LOCAL:
+		return byte_instruction(chunk, "OP_GET_LOCAL", offset);
+	case OpCode::OP_SET_LOCAL:
+		return byte_instruction(chunk, "OP_SET_LOCAL", offset);
 	case OpCode::OP_DEFINE_GLOBAL:
 		return constant_instruction(chunk, "OP_DEFINE_GLOBAL", offset);
 	case OpCode::OP_GET_GLOBAL:
@@ -90,4 +94,9 @@ int Debug::constant_instruction(const Chunk* chunk , std::string name,  int offs
 		}, (chunk->values[constant]).data);
 	std::cout <<  std::endl;
 	return offset + 2;	
+}
+int Debug::byte_instruction(const Chunk* chunk, std::string name, uint8_t offset) {
+	uint8_t slot = chunk->code[offset + 1];
+	std::cout << name << "\t" << slot << std::endl;
+	return offset + 2;
 }

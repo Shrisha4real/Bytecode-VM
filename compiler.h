@@ -110,7 +110,7 @@ public:
 	void declare_variable();
 	void add_local(Token name);
 	bool identifier_equal(Token* a, Token* b);
-
+	int resolve_local(std::shared_ptr<LocalCompiler> local_compiler, Token* name);
 private:
 	inline void debug_print_code() {
 		if (!this->parser->had_error) {

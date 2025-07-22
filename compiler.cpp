@@ -162,7 +162,7 @@ void Compiler::parse_precedence(Precedence precedence) {
 		return;
 	}
 	bool can_assign = precedence <= PREC_ASSIGNMENT;
-	prefix_rule(can_assign);
+ 	prefix_rule(can_assign);
 	while (precedence <= this->get_rule(this->parser->current.type)->precedence) {
 		this->parser->advance();
 		parse_fn infix_rule = this->get_rule(this->parser->previous.type)->infix;
@@ -361,13 +361,25 @@ void Compiler::variable(bool can_assign) {
 	named_variable(parser->previous, can_assign);
 }
 void Compiler::named_variable(Token name,bool can_assign) {
-	uint8_t arg = identifier_constant(name);
+	uint8_t get_op, set_op;
+	int arg = resolve_local(current, &name);
+	if (arg != -1) {
+		get_op = OpCode::OP_GET_LOCAL;
+		set_op = OpCode::OP_SET_LOCAL;
+	}
+	else {
+		arg = identifier_constant(name);
+		get_op = OpCode::OP_GET_GLOBAL;
+		set_op = OpCode::OP_SET_GLOBAL;
+	}
+
+
 	if (can_assign && match(token_type::TOKEN_EQUAL)) {
 		expression();
-		emit_bytes(OpCode::OP_SET_GLOBAL, arg);
+		emit_bytes(set_op, arg);
 	}
 	else
-		emit_bytes(OpCode::OP_GET_GLOBAL, arg);
+		emit_bytes(get_op, arg);
 }
 void Compiler::block() {
 	while (!check(token_type::TOKEN_RIGHT_BRACE) && !check(token_type::TOKEN_EOF)) {
@@ -430,4 +442,14 @@ void Compiler::add_local(Token name) {
 bool Compiler::identifier_equal(Token* a, Token* b) {
 	if (a->length != b->length) return false;
 	return strncmp(a->start ,b->start, a->length )==0 ? true : false;
+}
+int Compiler::resolve_local(std::shared_ptr<LocalCompiler>compiler, Token* name) {
+	for (int i = compiler->local_count - 1; i >= 0; i++) {
+		Local* local = &compiler->locals[i];
+		if (identifier_equal(name, &local->name)) {
+			return i;
+		}
+
+	}
+	return -1;
 }

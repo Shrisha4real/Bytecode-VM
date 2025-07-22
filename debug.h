@@ -11,7 +11,7 @@ public:
 	static int disassemble_instruction(const Chunk* chunk, int offset);
 	static int simple_instruction(std::string name, int offset);
 	static int constant_instruction(const Chunk* chunk, std::string name,  int offset);
-	
+	static int byte_instruction(const Chunk* chunk, std::string name, uint8_t offset);
 };
 
 

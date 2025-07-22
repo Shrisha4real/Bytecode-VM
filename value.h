@@ -40,7 +40,7 @@ public:
 	Value(const Value&) = delete;
 	Value& operator=(const Value&) = delete;
 	Value clone() const;
-
+	void set(Value& value);
 	static Value Bool(bool b);
 	static Value Nil();
 	static Value Number(double d);

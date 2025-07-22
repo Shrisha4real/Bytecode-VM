@@ -37,7 +37,7 @@ public:
 	void concatinate();
 	bool is_falsey(Value& value);
 	Value pop();
-	std::shared_ptr<ObjString> read_string(); 
+	std::shared_ptr<ObjString> read_string();
 
 private:
 	

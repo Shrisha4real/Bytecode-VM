@@ -1,6 +1,6 @@
 var y = 3;
 {
 var y =1;
-var y =1;
-
+print y;
 }
+print y;

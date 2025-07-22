@@ -138,6 +138,15 @@ InterpretResult VM::run() {
 			Value popped = pop();
 			break; 
 		}
+		case OpCode::OP_GET_LOCAL: {
+			uint8_t slot = read_byte();
+			stack.push_back(stack.at(slot).clone());
+			break;
+		}
+		case OpCode::OP_SET_LOCAL: {
+			stack.at(read_byte()).set(peek(0));
+
+		}
 		case OpCode::OP_DEFINE_GLOBAL: {
 
 			std::shared_ptr<ObjString>  name = read_string();
@@ -334,3 +343,4 @@ std::shared_ptr<ObjString>  VM::read_string() {
 	std::cerr << "Value is not a string.\n";
 	return nullptr;
 }
+
