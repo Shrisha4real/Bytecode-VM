@@ -353,8 +353,10 @@ uint8_t Compiler::identifier_constant(Token& name) {
 }
 
 void Compiler::define_variable(uint8_t global) {
-	if (current->get_scope_depth() > 0)
+	if (current->get_scope_depth() > 0){
+		mark_initialized();
 		return;
+	}
 	emit_bytes(OpCode::OP_DEFINE_GLOBAL, global);
 }
 void Compiler::variable(bool can_assign) {
@@ -434,8 +436,9 @@ void Compiler::add_local(Token name) {
 		parser->error("Too many local variables in function.");
 		return;
 	}
-	current->locals[current->get_local_count()].name = name;
-	current->locals[current->get_local_count()].depth = current->get_scope_depth();
+	
+	current->locals[current->local_count].name = name;
+	current->locals[current->local_count].depth = -1;
 	current->local_count++;
 }
 
@@ -444,12 +447,19 @@ bool Compiler::identifier_equal(Token* a, Token* b) {
 	return strncmp(a->start ,b->start, a->length )==0 ? true : false;
 }
 int Compiler::resolve_local(std::shared_ptr<LocalCompiler>compiler, Token* name) {
-	for (int i = compiler->local_count - 1; i >= 0; i++) {
+	for (int i = compiler->local_count - 1; i >= 0; i--) {
 		Local* local = &compiler->locals[i];
 		if (identifier_equal(name, &local->name)) {
+			if (local->depth == -1) {
+				parser->error("Can't read local variable in its own initializer.");
+			}
 			return i;
 		}
 
 	}
 	return -1;
+}
+
+void Compiler::mark_initialized() {
+	current->locals[current->local_count-1].depth = current->get_scope_depth();
 }

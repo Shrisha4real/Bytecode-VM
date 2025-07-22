@@ -20,7 +20,7 @@ public:
 };
 class ObjString : public Object{
 	std::string s{};
-	uint32_t hash{};
+	//uint32_t hash{};
 	
 public:
 	ObjString(const char* start, int length);

@@ -65,10 +65,11 @@ bool Table::insert(const std::shared_ptr<ObjString>& key, Value& value) {
 
     entry.key = key;
     entry.value = std::move(value);
-    entry.occupied = true;
-    entry.deleted = false;
-    if (!entry.occupied || entry.deleted) {
+
+    if (!entry.occupied ) {
         size++;
+        entry.occupied = true;
+        entry.deleted = false;
         return true;
     }
     return false;

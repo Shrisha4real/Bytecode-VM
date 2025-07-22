@@ -35,14 +35,15 @@ public:
 
 class LocalCompiler {
 	
-	int scope_depth;
+	
 public:
 	std::array<Local, UINT8_COUNT> locals;
 	int local_count;
+	int scope_depth;
 	LocalCompiler();
 	inline void increment_depth();
 	inline void decrement_depth();
-	const int& get_scope_depth() const;
+	inline const int& get_scope_depth() const;
 	const int& get_local_count() const;
 
 };
@@ -110,6 +111,7 @@ public:
 	void declare_variable();
 	void add_local(Token name);
 	bool identifier_equal(Token* a, Token* b);
+	void mark_initialized();
 	int resolve_local(std::shared_ptr<LocalCompiler> local_compiler, Token* name);
 private:
 	inline void debug_print_code() {

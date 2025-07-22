@@ -26,7 +26,7 @@ InterpretResult VM::run() {
 	std::cout << "\nexecuting run()\n";
 	while (true) {
 		
-		std::cout << "run() stackprint\t";
+		//std::cout << "run() stackprint\t";
 		
 		/*for (auto it = stack.begin(); it != stack.end(); it++) {
 			std::cout << "[ ";
@@ -46,7 +46,7 @@ InterpretResult VM::run() {
 
 			std::cout << " ]\t";
 		}*/
-		std::cout << std::endl;
+		//std::cout << std::endl;
 		Debug::disassemble_instruction(this->chunk, static_cast<int>(ip - ((this->chunk)->code).begin()));
 	
 		uint8_t instruction;
@@ -131,7 +131,7 @@ InterpretResult VM::run() {
 
 		case OpCode::OP_PRINT: {
 			Value::print_value(pop());
-			std::cout << std::endl;
+			//std::cout << std::endl;
 			break;
 		}
 		case OpCode::OP_POP: {
@@ -158,7 +158,7 @@ InterpretResult VM::run() {
 			std::shared_ptr<ObjString>  name = read_string();
 			Value* value = globals->get_table()->find(name);
 			if (!value) {
-				runtimeError("undefined variable" + name->get_string());
+				runtimeError("undefined variable -> " + name->get_string());
 				return InterpretResult::INTERPRET_RUNTIME_ERROR;
 			}
 			stack.push_back(value->clone());
@@ -169,7 +169,7 @@ InterpretResult VM::run() {
 			std::shared_ptr<ObjString>  name = read_string();
 			if (globals->get_table()->insert(name, peek(0))) {
 				globals->get_table()->remove(name);
-				runtimeError("undefined variable" + name->get_string());
+				runtimeError("undefined variable -> " + name->get_string());
 				return InterpretResult::INTERPRET_RUNTIME_ERROR;
 			}
 			break;

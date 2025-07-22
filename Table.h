@@ -28,7 +28,7 @@ private:
      void resize();
 
 public:
-    Table(size_t capacity = 3);
+    Table(size_t capacity = 1);
     bool insert(const std::shared_ptr<ObjString>& key, Value& value);
     Value* find(const std::shared_ptr<ObjString>& key) ;
     bool remove(const std::shared_ptr<ObjString>& key);

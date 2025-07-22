@@ -55,7 +55,7 @@ bool ObjString::operator!=(const ObjString& other) {
 }
 ObjString::ObjString(const ObjString& other) : Object(ObjType::OBJ_STRING) {
 	this->s = other.s;
-	this->hash = other.hash;
+	//this->hash = other.hash;
 };
 
 const std::string& ObjString::get_string() const {
