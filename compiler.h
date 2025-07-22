@@ -41,10 +41,6 @@ public:
 	int local_count;
 	int scope_depth;
 	LocalCompiler();
-	inline void increment_depth();
-	inline void decrement_depth();
-	inline const int& get_scope_depth() const;
-	const int& get_local_count() const;
 
 };
 
@@ -105,7 +101,7 @@ public:
 	void define_variable(uint8_t global);
 	void variable(bool can_assign);
 	void named_variable(Token name, bool can_assign);
-	void begin_scope();
+	inline void begin_scope();
 	void block();
 	void end_scope();
 	void declare_variable();

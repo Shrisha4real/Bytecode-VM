@@ -342,7 +342,7 @@ uint8_t Compiler::parse_variable(std::string message) {
 
 	this->parser->consume(token_type::TOKEN_IDENTIFIER, "variable declaration should start with var");
 	declare_variable();
-	if (current->get_scope_depth() > 0) return 0;
+	if (current->scope_depth > 0) return 0;
 	return identifier_constant(parser->previous);
 
 }
@@ -353,7 +353,7 @@ uint8_t Compiler::identifier_constant(Token& name) {
 }
 
 void Compiler::define_variable(uint8_t global) {
-	if (current->get_scope_depth() > 0){
+	if (current->scope_depth > 0){
 		mark_initialized();
 		return;
 	}
@@ -390,22 +390,22 @@ void Compiler::block() {
 	parser->consume(token_type::TOKEN_RIGHT_BRACE, "Expect '}' after block.");
 }
 void Compiler::begin_scope() {
-	current->increment_depth();
+	current->scope_depth++;
 }
 
 void Compiler::end_scope() {
-	current->decrement_depth();
-	while (current->get_local_count() > 0 && current->locals[current->get_local_count() - 1].depth > current->get_scope_depth()) {
+	current->scope_depth--;
+	while (current->local_count > 0 && current->locals[current->local_count - 1].depth > current->scope_depth) {
 		emit_byte(OpCode::OP_POP);
 		current->local_count--;
 	}
 }
 void Compiler::declare_variable() {
-	if (current->get_scope_depth() == 0) return;
+	if (current->scope_depth == 0) return;
 	Token* name = &parser->previous;
- 	for (int i = current->get_local_count() - 1; i >= 0; i--) {
+ 	for (int i = current->local_count - 1; i >= 0; i--) {
 		Local* local = &current->locals[i];
-		if (local->depth != (-1) && local->depth < current->get_scope_depth()) {
+		if (local->depth != (-1) && local->depth < current->scope_depth) {
 			break;
 		}
 		if (identifier_equal(name, &local->name)) {
@@ -419,20 +419,11 @@ void Compiler::declare_variable() {
 
 LocalCompiler::LocalCompiler() : local_count(0), scope_depth(0), locals() {};
 
-void LocalCompiler::increment_depth() {
-	scope_depth++;
-}
-void LocalCompiler::decrement_depth() {
-	scope_depth--;
-}
-const int& LocalCompiler::get_scope_depth()const {
-	return scope_depth;
-}
-const int& LocalCompiler::get_local_count()const {
-	return local_count;
-}
+
+
+
 void Compiler::add_local(Token name) {
-	if (current->get_local_count() == UINT8_COUNT) {
+	if (current->local_count == UINT8_COUNT) {
 		parser->error("Too many local variables in function.");
 		return;
 	}
@@ -461,5 +452,5 @@ int Compiler::resolve_local(std::shared_ptr<LocalCompiler>compiler, Token* name)
 }
 
 void Compiler::mark_initialized() {
-	current->locals[current->local_count-1].depth = current->get_scope_depth();
+	current->locals[current->local_count-1].depth = current->scope_depth;
 }
