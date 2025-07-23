@@ -63,7 +63,10 @@ int Debug::disassemble_instruction(const Chunk* chunk,  int offset) {
 		return constant_instruction(chunk, "OP_GET_GLOBAL",  offset);
 	case OpCode::OP_SET_GLOBAL:
 		return constant_instruction(chunk, "OP_SET_GLOBAL", offset);
-
+	case OP_JUMP:
+		return jump_instruction(chunk, "OP_JUMP", 1, offset);
+	case OP_JUMP_IF_FALSE:
+		return jump_instruction(chunk, "OP_JUMP_IF_FALSE", 1, offset);
 	
 
 	default:
@@ -99,4 +102,10 @@ int Debug::byte_instruction(const Chunk* chunk, std::string name, uint8_t offset
 	uint8_t slot = chunk->code[offset + 1];
 	std::cout << name << "\t" << slot << std::endl;
 	return offset + 2;
+}
+int Debug::jump_instruction(const Chunk* chunk, std::string name, int sign, int offset) {
+	uint16_t jump = static_cast<uint16_t>(chunk->code[offset + 1] << 8);
+	jump |= chunk->code[offset + 2];
+	std::cout << name <<"\t" << offset << "\t" << offset + 3 + sign * jump<<std::endl;
+	return offset + 3;
 }

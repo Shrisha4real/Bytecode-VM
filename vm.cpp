@@ -47,7 +47,7 @@ InterpretResult VM::run() {
 			std::cout << " ]\t";
 		}*/
 		//std::cout << std::endl;
-		Debug::disassemble_instruction(this->chunk, static_cast<int>(ip - ((this->chunk)->code).begin()));
+ 		Debug::disassemble_instruction(this->chunk, static_cast<int>(ip - ((this->chunk)->code).begin()));
 	
 		uint8_t instruction;
 		switch (instruction = read_byte()) {
@@ -174,7 +174,16 @@ InterpretResult VM::run() {
 			}
 			break;
 		}
-		
+		case::OpCode::OP_JUMP_IF_FALSE: {
+			uint16_t offset = read_short();
+			if (is_falsey(peek(0))) ip += offset;
+			break;
+		}
+		case::OpCode::OP_JUMP: {
+			uint16_t offset = read_short();
+			ip += offset;
+			break;
+		}
 		case OpCode::OP_RETURN: {
 			/*if (stack.empty()) {
 				return InterpretResult::INTERPRET_RUNTIME_ERROR;
@@ -301,7 +310,32 @@ Value& VM::peek(int distance) {
 
 //CHECK IF CONDITION FOR ALL CASES
 bool VM::is_falsey(Value& value) {
-	return (Value::is_nil(value) ||Value::is_bool(value));
+	return std::visit([&](auto&& arg) -> bool {
+		using T = std::decay_t<decltype(arg)>;
+
+		// nil is falsey
+		if constexpr (std::is_same_v<T, std::monostate>) {
+			return true;
+		}
+		// Boolean false is falsey
+		else if constexpr (std::is_same_v<T, bool>) {
+			return arg == false;
+		}
+		// Handle objects like strings
+		else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
+			if (arg && arg->obj_type() == ObjType::OBJ_STRING) {
+				auto strObj = std::static_pointer_cast<ObjString>(arg);
+				return strObj->get_string().empty();
+			}
+			return false;
+		}
+		else if constexpr (std::is_same_v < T, double >) {
+			return arg == static_cast<double>(0);
+		}
+		else {
+			return false;
+		}
+		}, value.data);
 }
 
 //FIXME: The ObjString pointer is pointing to the shared_ptr
@@ -342,5 +376,10 @@ std::shared_ptr<ObjString>  VM::read_string() {
 	}
 	std::cerr << "Value is not a string.\n";
 	return nullptr;
-}
+ }
 
+uint16_t VM::read_short() {
+	ip += 2;
+	return static_cast<uint16_t>(*(ip - 2) << 8 | *(ip - 1));
+
+}

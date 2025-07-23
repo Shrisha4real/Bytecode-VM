@@ -16,7 +16,7 @@ ObjType Object::obj_type() const {
 	return type;
 }
 ObjString::~ObjString() {
-	std::cout << "string object destrutor\n";
+	//std::cout << "string object destrutor\n";
 }
 bool ObjString::compare(const Object* other) const {
 	if (other->obj_type() != this->obj_type()) return false;

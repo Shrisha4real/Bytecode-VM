@@ -26,12 +26,12 @@ public:
 	ObjString(const char* start, int length);
 	ObjString(const std::string& s);
 	ObjString(const ObjString& other);
-
+	const std::string& get_string() const;
 	ObjString& operator +=(const ObjString& b); 
 	ObjString operator+(const ObjString& other) const;
 	bool operator==(const ObjString& other);
 	bool operator!=(const ObjString& other);
-	const std::string& get_string() const;
+	
 	virtual void print() const override;
 	virtual bool compare(const Object* other) const override;
 	virtual std::shared_ptr<Object> clone() const override;

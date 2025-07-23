@@ -47,7 +47,7 @@ public:
 
 class Compiler {
 public:
-	  // or whatever signature you're using
+	// or whatever signature you're using
 
 	std::shared_ptr<LocalCompiler> current;
 	const std::string& source;
@@ -56,7 +56,7 @@ public:
 	Scanner* scanner;
 	std::vector<ParseRule> rules;
 	std::shared_ptr<StringInterner>string_table;
-	
+
 	Compiler(const std::string& source, Chunk* chunk, std::shared_ptr<StringInterner>string_table);
 	// constructor
 
@@ -64,10 +64,10 @@ public:
 	bool compile();
 	void emit_byte(uint8_t byte);
 	//the function appends a single byte into the chunk
-	
+
 	void emit_bytes(uint8_t byte1, uint8_t byte2);
-	
-	
+
+
 	//Chunk* current_chunk();
 	// returns compiling_chunk
 
@@ -109,12 +109,16 @@ public:
 	bool identifier_equal(Token* a, Token* b);
 	void mark_initialized();
 	int resolve_local(std::shared_ptr<LocalCompiler> local_compiler, Token* name);
+	void if_statement();
+	int emit_jump(uint8_t instructions);
+	void patch_jump(int offset);
 private:
 	inline void debug_print_code() {
 		if (!this->parser->had_error) {
 			Debug::disassemble_chuck(this->compiling_chunk, "code");
 		}
-	};
+	}
 };
+
 
 

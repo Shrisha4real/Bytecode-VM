@@ -59,7 +59,9 @@ std::shared_ptr<Object> Value::transfer_obj() {
 //}
 
 bool Value::is_bool(const Value& v) {
-    return (v.type == ValueType::BOOL);
+    if (v.type != ValueType::BOOL) return false;
+    return std::get<bool>(v.data);
+    
 }
 bool Value::is_number(const Value& v) {
     return (v.type == ValueType::NUMBER);
@@ -71,7 +73,10 @@ bool Value::is_obj(const Value& v) {
     return (v.type == ValueType::OBJ);
 }
 bool Value::is_string(const Value& v) {
-    return v.as_obj()->obj_type() == ObjType::OBJ_STRING;
+    if (std::holds_alternative<std::shared_ptr<Object>>(v.data)) {
+        return v.as_obj()->obj_type() == ObjType::OBJ_STRING;
+    }
+    return false;
 
   /* const ObjString* other_v = dynamic_cast<ObjString*>(v.as_obj());
    if (!other_v) return false;

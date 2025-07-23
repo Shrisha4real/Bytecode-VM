@@ -12,6 +12,7 @@ public:
 	static int simple_instruction(std::string name, int offset);
 	static int constant_instruction(const Chunk* chunk, std::string name,  int offset);
 	static int byte_instruction(const Chunk* chunk, std::string name, uint8_t offset);
+	static int jump_instruction(const Chunk* chunk, std::string name,int sign, int offset);
 };
 
 

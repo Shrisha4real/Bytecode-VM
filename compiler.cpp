@@ -272,6 +272,9 @@ void Compiler::statement() {
 		block();
 		end_scope();
 	}
+	else if (match(token_type::TOKEN_IF)) {
+		if_statement();
+	}
 	else {
  		expression_statement();
 	}
@@ -453,4 +456,33 @@ int Compiler::resolve_local(std::shared_ptr<LocalCompiler>compiler, Token* name)
 
 void Compiler::mark_initialized() {
 	current->locals[current->local_count-1].depth = current->scope_depth;
+}
+
+void Compiler::if_statement() {
+	parser->consume(token_type::TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
+	expression();
+	parser->consume(token_type::TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
+	int then_jump = emit_jump(OpCode::OP_JUMP_IF_FALSE);
+	emit_byte(OpCode::OP_POP);
+	statement();
+	int else_jump = emit_jump(OpCode::OP_JUMP);
+	patch_jump(then_jump);
+	emit_byte(OpCode::OP_POP);
+	if (match(token_type::TOKEN_ELSE))	statement();
+	patch_jump(else_jump);
+}
+int Compiler::emit_jump(uint8_t instruction) {
+	emit_byte(instruction);
+	emit_byte(0xff);
+	emit_byte(0xff);
+	return compiling_chunk->code.size() - 2;
+
+}
+
+void Compiler::patch_jump(int offset) {
+	int jump = compiling_chunk->code.size() - offset - 2;
+	if (jump > UINT16_MAX) parser->error("Too much code to jump over");
+	compiling_chunk->code[offset] = (jump >> 8) & 0xff;
+	compiling_chunk->code[offset+1] = jump & 0xff;
+
 }
