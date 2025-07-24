@@ -110,6 +110,8 @@ public:
 	void mark_initialized();
 	int resolve_local(std::shared_ptr<LocalCompiler> local_compiler, Token* name);
 	void if_statement();
+	void and_(bool can_assign);
+	void or_(bool can_assign);
 	int emit_jump(uint8_t instructions);
 	void patch_jump(int offset);
 private:

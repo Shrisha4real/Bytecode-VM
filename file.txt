@@ -1,10 +1,1 @@
-var x = "shrisha";
-var y = "khushi";
-var u = false;
-if(1-1){
-	print(x);
-}
-else{
-	print(y);
-}
- 
+print(1 or 0);

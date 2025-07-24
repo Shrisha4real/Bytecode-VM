@@ -45,7 +45,7 @@ Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<Str
 	rules[token_type::TOKEN_IDENTIFIER] = { std::bind(&Compiler::variable , this, _1),  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_STRING] = { std::bind(&Compiler::string , this, _1),  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_NUMBER] = { std::bind(&Compiler::number, this, _1),   nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_AND] = { nullptr,  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_AND] = { nullptr,  std::bind(&Compiler::and_ , this, _1), Precedence::PREC_AND};
 	rules[token_type::TOKEN_CLASS] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_ELSE] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_FALSE] = { std::bind(&Compiler::literal, this, _1),  nullptr, Precedence::PREC_NONE };
@@ -53,7 +53,7 @@ Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<Str
 	rules[token_type::TOKEN_FUN] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_IF] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_NIL] = { std::bind(&Compiler::literal, this, _1),  nullptr, Precedence::PREC_NONE };
-	rules[token_type::TOKEN_OR] = { nullptr,  nullptr, Precedence::PREC_NONE };
+	rules[token_type::TOKEN_OR] = { nullptr,  std::bind(&Compiler::or_,this , _1), Precedence::PREC_OR};
 	rules[token_type::TOKEN_PRINT] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_RETURN] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_SUPER] = { nullptr,  nullptr, Precedence::PREC_NONE };
@@ -65,7 +65,7 @@ Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<Str
 	rules[token_type::TOKEN_EOF] = { nullptr,  nullptr, Precedence::PREC_NONE };
 };
 
-/*
+/* 
  * Function: compile
  * Purpose : compiles the given expression
  * Returns : true if the expression is valid else(or compilation is sucessful else return false.
@@ -470,6 +470,26 @@ void Compiler::if_statement() {
 	emit_byte(OpCode::OP_POP);
 	if (match(token_type::TOKEN_ELSE))	statement();
 	patch_jump(else_jump);
+}
+
+void Compiler::and_(bool can_assign) {
+	int end_jump = emit_jump(OpCode::OP_JUMP_IF_FALSE);
+	emit_byte(OpCode::OP_POP);
+	parse_precedence(Precedence::PREC_AND);
+	patch_jump(end_jump);
+
+}
+void Compiler::or_(bool can_assign) {
+	int else_jump =emit_jump(OpCode::OP_JUMP_IF_FALSE);
+	int end_jump = emit_jump(OpCode::OP_JUMP);
+
+	patch_jump(else_jump);
+	emit_byte(OpCode::OP_POP);
+
+	parse_precedence(Precedence::PREC_OR);
+	patch_jump(end_jump);
+	
+
 }
 int Compiler::emit_jump(uint8_t instruction) {
 	emit_byte(instruction);
