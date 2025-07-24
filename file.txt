@@ -1,1 +1,6 @@
-print(1 or 0);
+var name = "SHRISHA";
+var a = 4;
+while(a>0){
+	print name;
+	a = a-1;
+}

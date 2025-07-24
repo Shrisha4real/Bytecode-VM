@@ -275,6 +275,9 @@ void Compiler::statement() {
 	else if (match(token_type::TOKEN_IF)) {
 		if_statement();
 	}
+	else if (match(token_type::TOKEN_WHILE)) {
+		while_statement();
+	}
 	else {
  		expression_statement();
 	}
@@ -482,15 +485,27 @@ void Compiler::and_(bool can_assign) {
 void Compiler::or_(bool can_assign) {
 	int else_jump =emit_jump(OpCode::OP_JUMP_IF_FALSE);
 	int end_jump = emit_jump(OpCode::OP_JUMP);
-
 	patch_jump(else_jump);
 	emit_byte(OpCode::OP_POP);
-
 	parse_precedence(Precedence::PREC_OR);
-	patch_jump(end_jump);
+	patch_jump(end_jump);	
+}
+
+void Compiler::while_statement() {
+	int loop_start = compiling_chunk->code.size();
+	parser->consume(token_type::TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
+	expression();
+	parser->consume(token_type::TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
+	int then_jump = emit_jump(OpCode::OP_JUMP_IF_FALSE);
+	emit_byte(OpCode::OP_POP);
+	statement();
+	emit_loop(loop_start);
+	patch_jump(then_jump);
+	emit_byte(OpCode::OP_POP);
 	
 
 }
+
 int Compiler::emit_jump(uint8_t instruction) {
 	emit_byte(instruction);
 	emit_byte(0xff);
@@ -504,5 +519,14 @@ void Compiler::patch_jump(int offset) {
 	if (jump > UINT16_MAX) parser->error("Too much code to jump over");
 	compiling_chunk->code[offset] = (jump >> 8) & 0xff;
 	compiling_chunk->code[offset+1] = jump & 0xff;
+
+}
+
+void Compiler::emit_loop(int loop_start) {
+	emit_byte(OpCode::OP_LOOP);
+	int offset = compiling_chunk->code.size() - loop_start + 2;
+	if (offset > UINT16_MAX) parser->error("Loop body too largre");
+	emit_byte(static_cast<uint8_t>(offset >> 8 & 0xff));
+	emit_byte(static_cast<uint8_t>(offset & 0xff));
 
 }

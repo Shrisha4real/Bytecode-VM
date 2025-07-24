@@ -184,6 +184,11 @@ InterpretResult VM::run() {
 			ip += offset;
 			break;
 		}
+		case OpCode::OP_LOOP: {
+			uint16_t offset = read_short();
+			ip -= offset;
+			break;
+		}
 		case OpCode::OP_RETURN: {
 			/*if (stack.empty()) {
 				return InterpretResult::INTERPRET_RUNTIME_ERROR;

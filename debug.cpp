@@ -63,11 +63,12 @@ int Debug::disassemble_instruction(const Chunk* chunk,  int offset) {
 		return constant_instruction(chunk, "OP_GET_GLOBAL",  offset);
 	case OpCode::OP_SET_GLOBAL:
 		return constant_instruction(chunk, "OP_SET_GLOBAL", offset);
-	case OP_JUMP:
+	case OpCode::OP_JUMP:
 		return jump_instruction(chunk, "OP_JUMP", 1, offset);
-	case OP_JUMP_IF_FALSE:
+	case OpCode::OP_JUMP_IF_FALSE:
 		return jump_instruction(chunk, "OP_JUMP_IF_FALSE", 1, offset);
-	
+	case OpCode::OP_LOOP:
+		return jump_instruction(chunk, "OP_LOOP", -1, offset);
 
 	default:
 		std::cout << "Unknown op code" << instruction << std::endl;

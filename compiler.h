@@ -112,6 +112,8 @@ public:
 	void if_statement();
 	void and_(bool can_assign);
 	void or_(bool can_assign);
+	void while_statement();
+	void emit_loop(int loop_start);
 	int emit_jump(uint8_t instructions);
 	void patch_jump(int offset);
 private:
