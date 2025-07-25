@@ -21,8 +21,14 @@ Token Scanner::scan_token() {
     case ';': return this->make_token(TOKEN_SEMICOLON);
     case ',': return this->make_token(TOKEN_COMMA);
     case '.': return this->make_token(TOKEN_DOT);
-    case '-': return this->make_token(TOKEN_MINUS);
-    case '+': return this->make_token(TOKEN_PLUS);
+    case '-': {
+        return this->make_token(
+            this->match('-') ? TOKEN_DECREMENT : TOKEN_MINUS);
+    }
+    case '+': {
+        return this->make_token(
+            this->match('+') ? TOKEN_INCREMENT : TOKEN_PLUS);
+    }
     case '/': return this->make_token(TOKEN_SLASH);
     case '*': return this->make_token(TOKEN_STAR);
     case '!':
@@ -78,7 +84,7 @@ void Scanner::remove_white_spaces() {
             break;
         case '/':
             if (this->peek_next() == '/') {
-                while (peek() == '\n' && this->is_at_end()) {
+                while (peek() != '\n' && !this->is_at_end()) {
                     this->advance();
                 }
             }

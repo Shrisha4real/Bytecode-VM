@@ -42,6 +42,8 @@ Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<Str
 	rules[token_type::TOKEN_GREATER_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
 	rules[token_type::TOKEN_LESS] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
 	rules[token_type::TOKEN_LESS_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
+	rules[token_type::TOKEN_INCREMENT] = { nullptr, std::bind(&Compiler::variable, this, _1), Precedence::PREC_POSTFIX};
+	rules[token_type::TOKEN_DECREMENT] = { nullptr, std::bind(&Compiler::variable, this, _1), Precedence::PREC_POSTFIX };
 	rules[token_type::TOKEN_IDENTIFIER] = { std::bind(&Compiler::variable , this, _1),  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_STRING] = { std::bind(&Compiler::string , this, _1),  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_NUMBER] = { std::bind(&Compiler::number, this, _1),   nullptr, Precedence::PREC_NONE };
@@ -166,6 +168,10 @@ void Compiler::parse_precedence(Precedence precedence) {
 	while (precedence <= this->get_rule(this->parser->current.type)->precedence) {
 		this->parser->advance();
 		parse_fn infix_rule = this->get_rule(this->parser->previous.type)->infix;
+		if (infix_rule == nullptr) {
+			this->parser->error("expect an infix expression");
+			return;
+		}
 		infix_rule(can_assign);
 		if (can_assign && match(TOKEN_EQUAL)) {
 			parser->error("Invalid assignment target.");
@@ -181,6 +187,13 @@ void Compiler::parse_precedence(Precedence precedence) {
 void Compiler::expression() {
 	this->parse_precedence(Precedence::PREC_ASSIGNMENT);
 }
+void Compiler::postfix(bool can_assign) {
+	//pop the top isntructions
+	//
+	
+	variable(can_assign); // Or OP_SET_LOCAL depending on scope
+}
+
 
 void Compiler::unary(bool can_assign) {
 	token_type operator_type = this->parser->previous.type;
@@ -191,6 +204,7 @@ void Compiler::unary(bool can_assign) {
 		this->emit_byte(OpCode::OP_NEGATE);
 		break;
 	}
+
 	default: return;
 	}
 
@@ -203,6 +217,7 @@ void Compiler::binary(bool can_assign) {
 	case token_type::TOKEN_BANG_EQUAL:    this->emit_bytes(OpCode::OP_EQUAL, OpCode::OP_NOT); break;
 	case token_type::TOKEN_EQUAL_EQUAL:   this->emit_byte(OpCode::OP_EQUAL); break;
 	case token_type::TOKEN_GREATER:       this->emit_byte(OpCode::OP_GREATER); break;
+
 	case token_type::TOKEN_GREATER_EQUAL: this->emit_bytes(OpCode::OP_LESS, OpCode::OP_NOT); break;
 	case token_type::TOKEN_LESS:          this->emit_byte(OpCode::OP_LESS); break;
 	case token_type::TOKEN_LESS_EQUAL:    this->emit_bytes(OpCode::OP_GREATER, OpCode::OP_NOT); break;
@@ -222,6 +237,7 @@ void Compiler::binary(bool can_assign) {
 		this->emit_byte(OpCode::OP_DIVIDE);
 		break;
 	}
+	
 	default:return;
 	}
  }
@@ -277,6 +293,9 @@ void Compiler::statement() {
 	}
 	else if (match(token_type::TOKEN_WHILE)) {
 		while_statement();
+	}
+	else if (match(token_type::TOKEN_FOR)) {
+		for_statement();
 	}
 	else {
  		expression_statement();
@@ -504,6 +523,47 @@ void Compiler::while_statement() {
 	emit_byte(OpCode::OP_POP);
 	
 
+}
+void Compiler::for_statement() {
+	begin_scope();
+	parser->consume(token_type::TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
+	if (match(token_type::TOKEN_SEMICOLON)) {
+		//do nothing
+	}
+	else if (match(token_type::TOKEN_VAR)) {
+		var_declaration();
+	}
+	else 
+		expression_statement();
+
+	int loop_start = compiling_chunk->code.size();
+	int exit_jump = -1;
+	if (!match(token_type::TOKEN_SEMICOLON)) {
+		expression();
+		parser->consume(token_type::TOKEN_SEMICOLON, "Expect ';'.");
+		exit_jump = emit_jump(OpCode::OP_JUMP_IF_FALSE);
+		emit_byte(OpCode::OP_POP);
+	}
+	if (!match(token_type::TOKEN_RIGHT_PAREN)) {
+		int body_jump = emit_jump(OP_JUMP);
+		int increment_start = compiling_chunk->code.size();
+		expression();
+		emit_byte(OP_POP);
+		parser->consume(token_type::TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
+
+		emit_loop(loop_start);
+		loop_start = increment_start;
+		patch_jump(body_jump);
+	}
+	statement();
+
+
+	emit_loop(loop_start);
+	if (exit_jump != -1) {
+		patch_jump(exit_jump);
+		emit_byte(OpCode::OP_POP);
+	}
+	end_scope();
 }
 
 int Compiler::emit_jump(uint8_t instruction) {

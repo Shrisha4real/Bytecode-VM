@@ -80,6 +80,7 @@ public:
 	void number(bool can_assign);
 	void grouping(bool can_assign);;
 	void expression();
+	void postfix(bool can_assign);
 	void unary(bool can_assign);
 	void binary(bool can_assign);
 	void literal(bool can_assign);
@@ -116,6 +117,7 @@ public:
 	void emit_loop(int loop_start);
 	int emit_jump(uint8_t instructions);
 	void patch_jump(int offset);
+	void for_statement();
 private:
 	inline void debug_print_code() {
 		if (!this->parser->had_error) {

@@ -103,6 +103,26 @@ InterpretResult VM::run() {
 			break;
 
 		};
+		case OpCode::OP_INCREMENT: {
+			if (Value::is_number(this->peek(0)) ){
+				double b = std::move(stack.back()).as_number();
+				stack.push_back(Value::Number( b+1));
+			}
+			else {
+				runtimeError("Operands must be numbers.");
+				return InterpretResult::INTERPRET_RUNTIME_ERROR;
+			}
+		}
+		case OpCode::OP_DECREMENT: {
+			if (Value::is_number(this->peek(0))) {
+				double b = std::move(stack.back()).as_number();
+				stack.push_back(Value::Number(b -1));
+			}
+			else {
+				runtimeError("Operands must be numbers.");
+				return InterpretResult::INTERPRET_RUNTIME_ERROR;
+			}
+		}
 		case OpCode::OP_SUBTRACT: binary_op('-'); break;
 		case OpCode::OP_MULTIPLY: binary_op('*'); break;		
 		case OpCode::OP_DIVIDE: binary_op('/'); break;
@@ -145,7 +165,7 @@ InterpretResult VM::run() {
 		}
 		case OpCode::OP_SET_LOCAL: {
 			stack.at(read_byte()).set(peek(0));
-
+			break;
 		}
 		case OpCode::OP_DEFINE_GLOBAL: {
 
