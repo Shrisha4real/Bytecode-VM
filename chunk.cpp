@@ -18,3 +18,28 @@ void Chunk::write_chunk(uint8_t byte , int line){
 	(this->code).push_back(byte);
 	(this->lines).push_back(line);
 }
+
+Chunk::Chunk(const Chunk& other)
+    : code(other.code),
+    lines(other.lines)
+{
+    values.reserve(other.values.size());
+    for (const Value& v : other.values) {
+        values.push_back(v.clone());   
+    }
+}
+Chunk& Chunk::operator=(const Chunk& other)
+{
+    if (this == &other) return *this;
+
+    code = other.code;
+    lines = other.lines;
+
+    values.clear();
+    values.reserve(other.values.size());
+    for (const Value& v : other.values) {
+        values.push_back(v.clone());
+    }
+
+    return *this;
+}

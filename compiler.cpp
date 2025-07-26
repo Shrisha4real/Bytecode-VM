@@ -42,8 +42,8 @@ Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<Str
 	rules[token_type::TOKEN_GREATER_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
 	rules[token_type::TOKEN_LESS] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
 	rules[token_type::TOKEN_LESS_EQUAL] = { nullptr,  std::bind(&Compiler::binary, this, _1), Precedence::PREC_EQUALITY };
-	rules[token_type::TOKEN_INCREMENT] = { nullptr, std::bind(&Compiler::variable, this, _1), Precedence::PREC_POSTFIX};
-	rules[token_type::TOKEN_DECREMENT] = { nullptr, std::bind(&Compiler::variable, this, _1), Precedence::PREC_POSTFIX };
+	//rules[token_type::TOKEN_INCREMENT] = { nullptr, std::bind(&Compiler::variable, this, _1), Precedence::PREC_POSTFIX};
+	//rules[token_type::TOKEN_DECREMENT] = { nullptr, std::bind(&Compiler::variable, this, _1), Precedence::PREC_POSTFIX };
 	rules[token_type::TOKEN_IDENTIFIER] = { std::bind(&Compiler::variable , this, _1),  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_STRING] = { std::bind(&Compiler::string , this, _1),  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_NUMBER] = { std::bind(&Compiler::number, this, _1),   nullptr, Precedence::PREC_NONE };

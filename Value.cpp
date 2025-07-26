@@ -49,6 +49,34 @@ std::shared_ptr<Object> Value::as_obj() const {
     return std::get<std::shared_ptr<Object>>(this->data);
 }
 
+std::shared_ptr<ObjString> Value::as_string(const Value& v) {
+    if (!std::holds_alternative<std::shared_ptr<Object>>(v.data)) return nullptr;
+
+    std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(v.data);
+
+    std::shared_ptr<ObjString> string = std::dynamic_pointer_cast<ObjString>(obj);
+    if (!string)std::cout << "not a function object\n";
+
+    return string;
+}
+std::shared_ptr<ObjFunction> Value::as_function(const Value& v) {
+    if (!std::holds_alternative<std::shared_ptr<Object>>(v.data)) return nullptr;
+
+    std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(v.data);
+
+    std::shared_ptr<ObjFunction> function = std::dynamic_pointer_cast<ObjFunction>(obj);
+    if (!function)std::cout << "not a function object\n";
+    return function;
+}
+
+void Value::set(Value& other) {
+    type = other.type;
+    Value temp = other.clone();
+    data = std::move(temp.data);
+
+}
+
+
 std::shared_ptr<Object> Value::transfer_obj() {
     return std::exchange(std::get<std::shared_ptr<Object>>(data), nullptr);
 }
@@ -82,7 +110,12 @@ bool Value::is_string(const Value& v) {
    if (!other_v) return false;
    return true;*/
 }
-
+bool Value::is_function(const Value& v) {
+    if (std::holds_alternative<std::shared_ptr<Object>>(v.data)) {
+        return v.as_obj()->obj_type() == ObjType::OBJ_FUNCTION;
+    }
+    return false;
+}
 bool Value::valuesEqual(Value& a, Value& b) {
     if (a.type != b.type) return false;
     switch (a.type) {
@@ -117,20 +150,4 @@ void Value::print_value(const Value& value) {
         }
         }, value.data);
     std::cout << std::endl;
-}
-//static in declaration in Value class
-//FIXME string interning not implemented
-std::shared_ptr<ObjString> Value::as_string(const Value& v) {
-    if (!std::holds_alternative<std::shared_ptr<Object>>(v.data)) return nullptr;
-
-    std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(v.data);
-
-    std::shared_ptr<ObjString> string = std::dynamic_pointer_cast<ObjString>(obj);
-    return string; 
-}
-void Value::set(Value& other) {
-    type = other.type;
-    Value temp = other.clone();
-    data = std::move(temp.data);  
-
 }

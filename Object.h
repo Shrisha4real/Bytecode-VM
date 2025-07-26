@@ -1,9 +1,11 @@
 #pragma once
 #include<string>
 #include<iostream>
+#include "chunk.h"
+
 
 typedef enum {
-	OBJ_STRING,
+	OBJ_STRING,OBJ_FUNCTION
 } ObjType;
 
 class Object
@@ -12,12 +14,14 @@ class Object
 public:
 	Object(ObjType type) :type(type) {};
 	Object(const Object& other);
-	virtual void print() const = 0;
+	inline virtual void print() const = 0;
 	virtual bool compare(const Object* other) const =0 ;
 	virtual std::shared_ptr<Object> clone() const = 0;
 	ObjType obj_type() const;
 	virtual ~Object() = default;
 };
+
+
 class ObjString : public Object{
 	std::string s{};
 	//uint32_t hash{};
@@ -32,12 +36,26 @@ public:
 	bool operator==(const ObjString& other);
 	bool operator!=(const ObjString& other);
 	
-	virtual void print() const override;
+	inline virtual void print() const override;
 	virtual bool compare(const Object* other) const override;
 	virtual std::shared_ptr<Object> clone() const override;
 	const std::string& get_string();
 	const uint32_t get_hash();
 	static uint32_t hash_string(const std::string& s);
-	~ObjString();
+	~ObjString() = default;
 
+};
+
+class ObjFunction :public Object {
+	int arity;
+	Chunk chunk;
+	std::shared_ptr<ObjString> name;
+	
+public:
+	ObjFunction(const std::string& name);
+	ObjFunction(const ObjFunction& other);
+	inline virtual void print() const override;
+	virtual bool compare(const Object* other) const override;
+	virtual std::shared_ptr<Object> clone() const override;
+	~ObjFunction() = default;
 };

@@ -1,4 +1,7 @@
+#include "chunk.h"
 #include "Object.h"
+
+
 Object::Object(const Object& other) {
 	this->type = other.type;
 }
@@ -8,6 +11,11 @@ ObjString::ObjString( const char* start, int length) :s(start, length), Object(O
 };
 ObjString::ObjString(const std::string& a) :s(a), Object(ObjType::OBJ_STRING) {};
 
+ObjString::ObjString(const ObjString& other) : Object(ObjType::OBJ_STRING) {
+	this->s = other.s;
+	//this->hash = other.hash;
+};
+
 void ObjString::print() const { // The print method you want to access
 	std::cout << s;
 }
@@ -15,9 +23,9 @@ void ObjString::print() const { // The print method you want to access
 ObjType Object::obj_type() const {
 	return type;
 }
-ObjString::~ObjString() {
-	//std::cout << "string object destrutor\n";
-}
+//ObjString::~ObjString() {
+//	//std::cout << "string object destrutor\n";
+//}
 bool ObjString::compare(const Object* other) const {
 	if (other->obj_type() != this->obj_type()) return false;
 	const ObjString* other_str = dynamic_cast<const ObjString*>(other);
@@ -53,10 +61,7 @@ bool ObjString::operator==(const ObjString& other) {
 bool ObjString::operator!=(const ObjString& other) {
 	return this->s != other.s;
 }
-ObjString::ObjString(const ObjString& other) : Object(ObjType::OBJ_STRING) {
-	this->s = other.s;
-	//this->hash = other.hash;
-};
+
 
 const std::string& ObjString::get_string() const {
 	return s;
@@ -68,4 +73,28 @@ const uint32_t ObjString::get_hash() {
 
 std::shared_ptr<Object> ObjString::clone() const  {
 	return std::make_shared<ObjString>(*this); 
+}
+
+ObjFunction::ObjFunction(const std::string& func_name) :Object(ObjType::OBJ_FUNCTION), arity(0) {
+	name = std::make_shared<ObjString>(func_name);// check if its necessary
+}
+ObjFunction::ObjFunction(const ObjFunction& other): Object(ObjType::OBJ_FUNCTION) {
+	this->arity = other.arity;
+	this->name = std::static_pointer_cast<ObjString>(other.name->clone());
+	this->chunk = other.chunk;
+
+}
+
+void ObjFunction::print() const {
+	name->print();
+}
+//check once
+bool ObjFunction::compare(const Object* other)const {
+	if (other->obj_type() != this->obj_type()) return false;
+	const ObjFunction* other_func = dynamic_cast<const ObjFunction*>(other);
+	if ((other_func->name->get_hash() != this->name->get_hash()) && (other_func->arity != this->arity)) return false;
+	return true;
+}
+std::shared_ptr<Object> ObjFunction::clone()const {
+	return std::make_shared<ObjFunction>(*this);
 }

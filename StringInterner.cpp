@@ -3,6 +3,8 @@
 #include"Object.h"
 #include"common.h"
 #include"Value.h"
+
+
 StringInterner::StringInterner() {
     strings = std::make_shared<Table>();
 }

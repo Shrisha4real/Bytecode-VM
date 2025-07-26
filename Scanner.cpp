@@ -22,12 +22,13 @@ Token Scanner::scan_token() {
     case ',': return this->make_token(TOKEN_COMMA);
     case '.': return this->make_token(TOKEN_DOT);
     case '-': {
-        return this->make_token(
-            this->match('-') ? TOKEN_DECREMENT : TOKEN_MINUS);
+        return this->make_token(TOKEN_MINUS);
+        // check for another - in case of decrement operations
+
     }
     case '+': {
-        return this->make_token(
-            this->match('+') ? TOKEN_INCREMENT : TOKEN_PLUS);
+        return this->make_token(TOKEN_PLUS);
+        //check for another + in case of increment operations
     }
     case '/': return this->make_token(TOKEN_SLASH);
     case '*': return this->make_token(TOKEN_STAR);

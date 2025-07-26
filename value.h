@@ -5,6 +5,7 @@
 
 class Object;
 class ObjString;
+class ObjFunction;
 class VM;
 enum class ValueType{BOOL, NUMBER , NIL , OBJ};
 
@@ -50,6 +51,8 @@ public:
 	bool as_nil() const;
 	std::shared_ptr<Object> as_obj() const;
 	static std::shared_ptr<ObjString> as_string(const Value& value);
+	static std::shared_ptr<ObjFunction> as_function(const Value& value);
+
 	std::shared_ptr<Object> transfer_obj();
 	//ObjString* as_string() const;
 	static void print_value(const Value& value);
@@ -62,4 +65,6 @@ public:
 	static bool is_nil(const Value& v);
 	static bool is_obj(const Value& v);
 	static bool is_string(const Value& v);
+	static bool is_function(const Value& v);
+
 };
