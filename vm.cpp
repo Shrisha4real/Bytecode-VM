@@ -11,15 +11,48 @@
 #include"Object.h"
 #include"ParseRule.h"
 
-VM::VM() :chunk(new Chunk()) {
-	ip = (this->chunk->code).begin();
+CallFrame::CallFrame(std::shared_ptr<ObjFunction> func,
+	std::vector<uint8_t>::iterator ip_iter,
+	int slot_base)
+	: function(std::move(func)), ip(ip_iter), slot_base(slot_base) {
+}
+
+VM::VM() : frames() , frame_count(0) {
+	//ip = (this->chunk->code).begin();
 	strings = std::make_shared<StringInterner>();
 	globals = std::make_shared<StringInterner>();
 };
 
 
-uint8_t VM::read_byte() {
-	return *((this->ip)++);
+uint8_t VM::read_byte(CallFrame& frame) {
+	return *(frame.ip++);
+}
+
+Value& VM::read_constant(CallFrame& frame) {
+	try {
+		uint8_t index = read_byte(frame);
+		return frame.function->chunk.values.at(index);
+	}
+	catch (const std::out_of_range& e) {
+		runtimeError("Constant index out of range.");
+
+		static Value dummy;
+		return dummy;
+	}
+}
+
+std::shared_ptr<ObjString>  VM::read_string(CallFrame& frame) {
+	Value& top_value = read_constant(frame);
+	if (Value::is_string(top_value)) {
+		return Value::as_string(top_value);
+	}
+	std::cerr << "Value is not a string.\n";
+	return nullptr;
+}
+
+uint16_t VM::read_short(CallFrame& frame) {
+	frame.ip += 2;
+	return static_cast<uint16_t>(*(frame.ip - 2) << 8 | *(frame.ip - 1));
 }
 
 InterpretResult VM::run() {
@@ -47,13 +80,16 @@ InterpretResult VM::run() {
 			std::cout << " ]\t";
 		}*/
 		//std::cout << std::endl;
- 		Debug::disassemble_instruction(this->chunk, static_cast<int>(ip - ((this->chunk)->code).begin()));
+		CallFrame& frame = frames[frame_count-1];
+		Chunk* frame_ptr = &(frame.function->chunk);
+ 		//CHECK the pointer values are apssed on to the function
+		Debug::disassemble_instruction(frame_ptr, static_cast<int>((frame.ip) - ((frame.function->chunk.code).begin())));
 	
 		uint8_t instruction;
-		switch (instruction = read_byte()) {
+		switch (instruction = read_byte(frame)) {
 
 		case OpCode::OP_CONSTANT: {
-			Value& constant = read_constant();
+			Value& constant = read_constant(frame);
 			stack.push_back(std::move(constant));
   			std::cout << "run() -> case:OP_CONSTANT ";
 
@@ -103,7 +139,8 @@ InterpretResult VM::run() {
 			break;
 
 		};
-		/*case OpCode::OP_INCREMENT: {
+		/*
+		case OpCode::OP_INCREMENT: {
 			if (Value::is_number(this->peek(0)) ){
 				double b = std::move(stack.back()).as_number();
 				stack.push_back(Value::Number( b+1));
@@ -122,7 +159,8 @@ InterpretResult VM::run() {
 				runtimeError("Operands must be numbers.");
 				return InterpretResult::INTERPRET_RUNTIME_ERROR;
 			}
-		}*/
+		}
+		*/
 		case OpCode::OP_SUBTRACT: binary_op('-'); break;
 		case OpCode::OP_MULTIPLY: binary_op('*'); break;		
 		case OpCode::OP_DIVIDE: binary_op('/'); break;
@@ -159,23 +197,46 @@ InterpretResult VM::run() {
 			break; 
 		}
 		case OpCode::OP_GET_LOCAL: {
-			uint8_t slot = read_byte();
-			stack.push_back(stack.at(slot-1).clone());
+			uint8_t slot = read_byte(frame);
+			//CHECK slot -1
+			stack.push_back(stack.at(frame.slot_base + slot ).clone());
+
+ 			//stack.push_back((frame.slots + slot - 1)->clone());
+
+			//stack.push_back(stack.at(slot-1).clone());
 			break;
 		}
 		case OpCode::OP_SET_LOCAL: {
-			stack.at(read_byte()-1).set(peek(0));
+			try {
+				int slot = read_byte(frame) ;
+				if (slot < 0 || slot >= static_cast<int>(stack.size())) {
+					std::cerr << "Runtime Error: Invalid stack slot access: " << slot << "\n";
+					runtimeError("Invalid local variable access.");
+					return INTERPRET_RUNTIME_ERROR;
+				}
+				Value& target = stack.at((frame.slot_base + slot)); // throws if slot is out of bounds
+				target.set(peek(0));
+				
+				/*(frame.slot_base + slot)->set(peek(0));*/
+
+			}
+			catch (const std::out_of_range& e) {
+				std::cerr << "Runtime Error: Attempted to set local at invalid stack slot.\n";
+				runtimeError("Invalid local variable access.");
+				return INTERPRET_RUNTIME_ERROR;
+			}
 			break;
 		}
+
 		case OpCode::OP_DEFINE_GLOBAL: {
 
-			std::shared_ptr<ObjString>  name = read_string();
+			std::shared_ptr<ObjString>  name = read_string(frame);
 			globals->get_table()->insert(name , peek(0));
 			pop();
 			break;
 		}
 		case OpCode::OP_GET_GLOBAL: {
-			std::shared_ptr<ObjString>  name = read_string();
+			std::shared_ptr<ObjString>  name = read_string(frame);
 			Value* value = globals->get_table()->find(name);
 			if (!value) {
 				runtimeError("undefined variable -> " + name->get_string());
@@ -186,7 +247,7 @@ InterpretResult VM::run() {
 		}
 		//FIXME: if the back of the stack is a bool like true then this doesnt work
 		case OpCode::OP_SET_GLOBAL: {
-			std::shared_ptr<ObjString>  name = read_string();
+			std::shared_ptr<ObjString>  name = read_string(frame);
 			if (globals->get_table()->insert(name, peek(0))) {
 				globals->get_table()->remove(name);
 				runtimeError("undefined variable -> " + name->get_string());
@@ -195,18 +256,18 @@ InterpretResult VM::run() {
 			break;
 		}
 		case::OpCode::OP_JUMP_IF_FALSE: {
-			uint16_t offset = read_short();
-			if (is_falsey(peek(0))) ip += offset;
+			uint16_t offset = read_short(frame);
+			if (is_falsey(peek(0))) frame.ip += offset;
 			break;
 		}
 		case::OpCode::OP_JUMP: {
-			uint16_t offset = read_short();
-			ip += offset;
+			uint16_t offset = read_short(frame);
+			frame.ip += offset;
 			break;
 		}
 		case OpCode::OP_LOOP: {
-			uint16_t offset = read_short();
-			ip -= offset;
+			uint16_t offset = read_short(frame);
+			frame.ip -= offset;
 			break;
 		}
 		case OpCode::OP_RETURN: {
@@ -239,9 +300,7 @@ InterpretResult VM::run() {
 	std::cout << "return run()\n\n";
 }
 
- Value& VM::read_constant() {
-	return (chunk->values).at(read_byte());
-}
+
 
 
 void VM::binary_op(char op) {
@@ -299,28 +358,35 @@ void VM::binary_op(char op) {
  */
 InterpretResult VM::intepret(const std::string& source) {
 
-	Compiler compiler(source , this->chunk,this->strings);
+	Compiler compiler(source , this->strings);
 
 
-	
-	if (!compiler.compile()) {
-		delete chunk;
+	std::shared_ptr<ObjFunction> function = compiler.compile();
+	if (!function) {
+		//delete chunk;
 		return InterpretResult::INTERPRET_COMPILE_ERROR;
 
 	}
 	//this->chunk = chunk;
-	this->ip = (chunk->code).begin();
+	//this->ip = (chunk->code).begin();
+	CallFrame frame(function, function->chunk.code.begin(),0 );
+
+	stack.push_back(Value::Obj(function));
+
+	frames[frame_count++] = frame; // function starts using stack from here
+	//frame_count++;
+	
 	InterpretResult result = this->run();
 
-	delete chunk;
+	//delete chunk;
 	return result;
 
 }
 void VM::runtimeError(const std::string& message) {
 	std::cerr << message << "\n";
-
-	size_t instruction = std::distance((this->chunk->code).begin(), this->ip) - 1;
-	int line = this->chunk->lines[instruction];
+	CallFrame& frame = frames[frame_count-1];
+	size_t instruction = std::distance(frame.function->chunk.code.begin(), frame.ip) - 1;
+	int line = frame.function->chunk.lines[instruction];
 	std::cerr << "[line " << line << "] in script\n";
 	this->stack.clear();
 }
@@ -392,19 +458,4 @@ Value VM::pop() {
 	Value val = std::move(stack.back());
 	stack.pop_back();
 	return val;
-}
-
-std::shared_ptr<ObjString>  VM::read_string() {
-	Value& top_value = read_constant(); 
-	if (Value::is_string(top_value)) {
-		return Value::as_string(top_value); 
-	}
-	std::cerr << "Value is not a string.\n";
-	return nullptr;
- }
-
-uint16_t VM::read_short() {
-	ip += 2;
-	return static_cast<uint16_t>(*(ip - 2) << 8 | *(ip - 1));
-
 }

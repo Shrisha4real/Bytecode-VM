@@ -48,9 +48,10 @@ public:
 
 class ObjFunction :public Object {
 	int arity;
-	Chunk chunk;
 	
 public:
+	Chunk chunk;
+
 	std::shared_ptr<ObjString> name;
 
 	ObjFunction(const std::string& name="");

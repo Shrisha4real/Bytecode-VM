@@ -2,7 +2,7 @@
 #include "common.h"
 #include "chunk.h"
 #include"Value.h"
-void Debug::disassemble_chuck(const Chunk* chunk, std::string name)  {
+void Debug::disassemble_chuck(Chunk* chunk, std::string name)  {
 	std::cout << "==\t" << name << "\t=="<<std::endl;
 	for (int offset = 0; offset < (chunk->code).size();) {
 		offset = disassemble_instruction(chunk, offset);
@@ -10,7 +10,7 @@ void Debug::disassemble_chuck(const Chunk* chunk, std::string name)  {
 }
 
 
-int Debug::disassemble_instruction(const Chunk* chunk,  int offset) {
+int Debug::disassemble_instruction(Chunk* chunk,  int offset) {
 	std::cout << std::setw(4) << std::setfill('0') <<  offset << '\t';
 	if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1]) {
 		std::cout << "|\t";
@@ -81,7 +81,7 @@ int Debug::simple_instruction(std::string name, int offset) {
 	return offset + 1;
 }
 
-int Debug::constant_instruction(const Chunk* chunk , std::string name,  int offset) {
+int Debug::constant_instruction(Chunk* chunk, std::string name,  int offset) {
 	uint8_t constant = (chunk->code).at(offset + 1);
 	std::cout << name << '\t' << static_cast<int>(constant) << '\t';
 	std::visit([](auto&& arg) {
@@ -99,12 +99,12 @@ int Debug::constant_instruction(const Chunk* chunk , std::string name,  int offs
 	std::cout <<  std::endl;
 	return offset + 2;	
 }
-int Debug::byte_instruction(const Chunk* chunk, std::string name, uint8_t offset) {
+int Debug::byte_instruction(Chunk* chunk, std::string name, uint8_t offset) {
 	uint8_t slot = chunk->code[offset + 1];
 	std::cout << name << "\t" << slot << std::endl;
 	return offset + 2;
 }
-int Debug::jump_instruction(const Chunk* chunk, std::string name, int sign, int offset) {
+int Debug::jump_instruction(Chunk* chunk, std::string name, int sign, int offset) {
 	uint16_t jump = static_cast<uint16_t>(chunk->code[offset + 1] << 8);
 	jump |= chunk->code[offset + 2];
 	std::cout << name <<"\t" << offset << "\t" << offset + 3 + sign * jump<<std::endl;

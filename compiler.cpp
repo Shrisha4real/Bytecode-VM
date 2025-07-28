@@ -19,7 +19,7 @@ using namespace std::placeholders;
  * Purpose : creates a Scanner and a parser onjects and sets all the parsing rules got every keyword
  * Returns : InterpretResult - the result of program execution.
  */
-Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<StringInterner>string_table) : source(source), compiling_chunk(chunk), rules(static_cast<size_t>(token_type::TOKEN_EOF) + 1), string_table(string_table) {
+Compiler::Compiler( const std::string& source, std::shared_ptr<StringInterner>string_table) : source(source),  rules(static_cast<size_t>(token_type::TOKEN_EOF) + 1), string_table(string_table) {
 	scanner = new Scanner(this->source);
 	parser = new Parser(this->scanner);
 	current = std::make_shared<LocalCompiler>(FunctionType::TYPE_SCRIPT);
@@ -74,7 +74,8 @@ void Compiler::debug_print_code() {
 }
 
 Chunk* Compiler::current_chunk() {
-	return compiling_chunk;
+	
+	return &current->function->chunk;
 }
 /* 
  * Function: compile
@@ -154,7 +155,7 @@ void Compiler::emit_constant(Value&& value) {
  * Purpose : pushes a constant number into the VM
  */
 uint8_t Compiler::make_constant(Value&& value) {
-	int constant = this->current_chunk()->add_constant(std::move(value));
+	int constant =  this->current_chunk()->add_constant(std::move(value));
 	if (constant > UINT8_MAX) {
 		this->parser->error("Too many constants in one chunk.");
 		return 0;

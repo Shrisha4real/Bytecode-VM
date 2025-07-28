@@ -12,7 +12,7 @@ size_t Chunk::add_constant( Value&& value) {
 	(this->values).push_back(std::move(value));
 	return ((this->values).size() - 1);
 
-}
+}  
 
 void Chunk::write_chunk(uint8_t byte , int line){
 	(this->code).push_back(byte);

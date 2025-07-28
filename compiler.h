@@ -57,16 +57,15 @@ public:
 
 	std::shared_ptr<LocalCompiler> current;
 	const std::string& source;
-	Chunk* compiling_chunk;
 	Parser* parser;
 	Scanner* scanner;
 	std::vector<ParseRule> rules;
 	std::shared_ptr<StringInterner>string_table;
 
-	Compiler(const std::string& source, Chunk* chunk, std::shared_ptr<StringInterner>string_table);
+	Compiler(const std::string& source,  std::shared_ptr<StringInterner>string_table);
 	// constructor
-
 	Chunk* current_chunk();
+
 	std::shared_ptr<ObjFunction> compile();
 	void emit_byte(uint8_t byte);
 	//the function appends a single byte into the chunk

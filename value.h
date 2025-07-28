@@ -18,7 +18,7 @@ enum class ValueType{BOOL, NUMBER , NIL , OBJ};
  methods with name is_<value_type> is to verify if the value object is of <value_type> or not
 */
 class Value {
-	
+		
 public:
 	std::shared_ptr<VM>vm;
 	ValueType type;
