@@ -11,17 +11,21 @@
 #include <array>
 #include <cstring> // for strcmp
 
-
+typedef enum {
+	TYPE_FUNCTION,
+	TYPE_SCRIPT
+} FunctionType;
 
 class Chunk;
 class Parser;
 class Scanner;
-class ParseRule;
+class ParseRule;  
 class StringInterner;
 class Value;
 class LocalCompiler;
 class Local;
 class Token;
+class ObjFunction;
 
 constexpr int UINT8_COUNT = UINT8_MAX + 1;
 class Local {
@@ -37,10 +41,12 @@ class LocalCompiler {
 	
 	
 public:
+	std::shared_ptr<ObjFunction>function;
+	FunctionType type;
 	std::array<Local, UINT8_COUNT> locals;
 	int local_count;
 	int scope_depth;
-	LocalCompiler();
+	LocalCompiler(FunctionType type);
 
 };
 
@@ -60,18 +66,16 @@ public:
 	Compiler(const std::string& source, Chunk* chunk, std::shared_ptr<StringInterner>string_table);
 	// constructor
 
-
-	bool compile();
+	Chunk* current_chunk();
+	std::shared_ptr<ObjFunction> compile();
 	void emit_byte(uint8_t byte);
 	//the function appends a single byte into the chunk
 
 	void emit_bytes(uint8_t byte1, uint8_t byte2);
 
 
-	//Chunk* current_chunk();
-	// returns compiling_chunk
 
-	void end_compiler();
+	std::shared_ptr < ObjFunction> end_compiler();
 	// rerturns emit_return()
 
 	void emit_return();
@@ -119,11 +123,7 @@ public:
 	void patch_jump(int offset);
 	void for_statement();
 private:
-	inline void debug_print_code() {
-		if (!this->parser->had_error) {
-			Debug::disassemble_chuck(this->compiling_chunk, "code");
-		}
-	}
+	inline void debug_print_code();
 };
 
 

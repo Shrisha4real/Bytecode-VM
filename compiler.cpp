@@ -22,7 +22,7 @@ using namespace std::placeholders;
 Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<StringInterner>string_table) : source(source), compiling_chunk(chunk), rules(static_cast<size_t>(token_type::TOKEN_EOF) + 1), string_table(string_table) {
 	scanner = new Scanner(this->source);
 	parser = new Parser(this->scanner);
-	current = std::make_shared<LocalCompiler>();
+	current = std::make_shared<LocalCompiler>(FunctionType::TYPE_SCRIPT);
 	rules[token_type::TOKEN_LEFT_PAREN] = {std::bind(&Compiler::grouping, this, _1), nullptr, Precedence::PREC_CALL};
 	rules[token_type::TOKEN_RIGHT_PAREN] = { nullptr,  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_LEFT_BRACE] = { nullptr,  nullptr, Precedence::PREC_NONE };
@@ -67,19 +67,28 @@ Compiler::Compiler( const std::string& source, Chunk* chunk, std::shared_ptr<Str
 	rules[token_type::TOKEN_EOF] = { nullptr,  nullptr, Precedence::PREC_NONE };
 };
 
+void Compiler::debug_print_code() {
+	if (!this->parser->had_error) {
+		Debug::disassemble_chuck(this->current_chunk(), current->function->name->get_string());
+	}
+}
+
+Chunk* Compiler::current_chunk() {
+	return compiling_chunk;
+}
 /* 
  * Function: compile
  * Purpose : compiles the given expression
  * Returns : true if the expression is valid else(or compilation is sucessful else return false.
  */
-bool Compiler::compile() {
+std::shared_ptr<ObjFunction> Compiler::compile() {
 
 	this->parser->advance();//sets the first token as the current token to be parsed
 	while (!match(token_type::TOKEN_EOF)) {
 		declaration();
 	}
-	this->end_compiler();
-	return !this->parser->had_error;
+	//std::shared_ptr<ObjFunction> end = this->end_compiler();
+	return this->parser->had_error? nullptr: this->end_compiler();
 
 }
 
@@ -88,7 +97,7 @@ bool Compiler::compile() {
  * Purpose : adds the instructions to the VM stack
  */
 void Compiler::emit_byte(uint8_t byte) {
-	this->compiling_chunk->write_chunk(byte, this->parser->previous.line);
+	this->current_chunk()->write_chunk(byte, this->parser->previous.line);
 }
 
 /*
@@ -102,10 +111,13 @@ void Compiler::emit_bytes(uint8_t byte1, uint8_t byte2) {
 
 /*
  * Function: end_compiler
- * Purpose : executed when the expression is ivaluated
+ * Purpose : executed when the expression is valuated
  */
-void Compiler::end_compiler() {
+std::shared_ptr<ObjFunction> Compiler::end_compiler() {
 	this->emit_return();
+	debug_print_code();
+
+	return this->current->function;
 }
 
 
@@ -142,7 +154,7 @@ void Compiler::emit_constant(Value&& value) {
  * Purpose : pushes a constant number into the VM
  */
 uint8_t Compiler::make_constant(Value&& value) {
-	int constant = this->compiling_chunk->add_constant(std::move(value));
+	int constant = this->current_chunk()->add_constant(std::move(value));
 	if (constant > UINT8_MAX) {
 		this->parser->error("Too many constants in one chunk.");
 		return 0;
@@ -187,6 +199,9 @@ void Compiler::parse_precedence(Precedence precedence) {
 void Compiler::expression() {
 	this->parse_precedence(Precedence::PREC_ASSIGNMENT);
 }
+
+
+//FIXME: HAS NOT BEEN IMPLEMENTED
 void Compiler::postfix(bool can_assign) {
 	//pop the top isntructions
 	//
@@ -277,7 +292,7 @@ void Compiler::declaration() {
 	}
 	if (this->parser->panic_mode) synchronise();
 
-}
+}	
 
 void Compiler::statement() {
 	if (match(token_type::TOKEN_PRINT)){
@@ -442,7 +457,7 @@ void Compiler::declare_variable() {
 }
 //FIXME the locals array is uninitialized
 
-LocalCompiler::LocalCompiler() : local_count(0), scope_depth(0), locals() {};
+LocalCompiler::LocalCompiler(FunctionType type) : local_count(1), scope_depth(0), locals() , type(type) , function(std::make_shared<ObjFunction>() ){};
 
 
 
@@ -511,7 +526,7 @@ void Compiler::or_(bool can_assign) {
 }
 
 void Compiler::while_statement() {
-	int loop_start = compiling_chunk->code.size();
+	int loop_start = current_chunk()->code.size();
 	parser->consume(token_type::TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
 	expression();
 	parser->consume(token_type::TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
@@ -536,7 +551,7 @@ void Compiler::for_statement() {
 	else 
 		expression_statement();
 
-	int loop_start = compiling_chunk->code.size();
+	int loop_start = current_chunk()->code.size();
 	int exit_jump = -1;
 	if (!match(token_type::TOKEN_SEMICOLON)) {
 		expression();
@@ -546,7 +561,7 @@ void Compiler::for_statement() {
 	}
 	if (!match(token_type::TOKEN_RIGHT_PAREN)) {
 		int body_jump = emit_jump(OP_JUMP);
-		int increment_start = compiling_chunk->code.size();
+		int increment_start = current_chunk()->code.size();
 		expression();
 		emit_byte(OP_POP);
 		parser->consume(token_type::TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
@@ -570,21 +585,21 @@ int Compiler::emit_jump(uint8_t instruction) {
 	emit_byte(instruction);
 	emit_byte(0xff);
 	emit_byte(0xff);
-	return compiling_chunk->code.size() - 2;
+	return current_chunk()->code.size() - 2;
 
 }
 
 void Compiler::patch_jump(int offset) {
-	int jump = compiling_chunk->code.size() - offset - 2;
+	int jump = current_chunk()->code.size() - offset - 2;
 	if (jump > UINT16_MAX) parser->error("Too much code to jump over");
-	compiling_chunk->code[offset] = (jump >> 8) & 0xff;
-	compiling_chunk->code[offset+1] = jump & 0xff;
+	current_chunk()->code[offset] = (jump >> 8) & 0xff;
+	current_chunk()->code[offset+1] = jump & 0xff;
 
 }
 
 void Compiler::emit_loop(int loop_start) {
 	emit_byte(OpCode::OP_LOOP);
-	int offset = compiling_chunk->code.size() - loop_start + 2;
+	int offset = current_chunk()->code.size() - loop_start + 2;
 	if (offset > UINT16_MAX) parser->error("Loop body too largre");
 	emit_byte(static_cast<uint8_t>(offset >> 8 & 0xff));
 	emit_byte(static_cast<uint8_t>(offset & 0xff));

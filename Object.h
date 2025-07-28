@@ -49,10 +49,11 @@ public:
 class ObjFunction :public Object {
 	int arity;
 	Chunk chunk;
-	std::shared_ptr<ObjString> name;
 	
 public:
-	ObjFunction(const std::string& name);
+	std::shared_ptr<ObjString> name;
+
+	ObjFunction(const std::string& name="");
 	ObjFunction(const ObjFunction& other);
 	inline virtual void print() const override;
 	virtual bool compare(const Object* other) const override;

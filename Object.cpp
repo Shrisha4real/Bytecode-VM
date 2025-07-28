@@ -17,7 +17,7 @@ ObjString::ObjString(const ObjString& other) : Object(ObjType::OBJ_STRING) {
 };
 
 void ObjString::print() const { // The print method you want to access
-	std::cout << s;
+	s.empty() ? std::cout<<" <script> " : std::cout << s;
 }
 
 ObjType Object::obj_type() const {

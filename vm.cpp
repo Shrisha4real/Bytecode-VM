@@ -160,11 +160,11 @@ InterpretResult VM::run() {
 		}
 		case OpCode::OP_GET_LOCAL: {
 			uint8_t slot = read_byte();
-			stack.push_back(stack.at(slot).clone());
+			stack.push_back(stack.at(slot-1).clone());
 			break;
 		}
 		case OpCode::OP_SET_LOCAL: {
-			stack.at(read_byte()).set(peek(0));
+			stack.at(read_byte()-1).set(peek(0));
 			break;
 		}
 		case OpCode::OP_DEFINE_GLOBAL: {
