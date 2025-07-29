@@ -26,7 +26,7 @@ public:
 	std::vector<uint8_t>::iterator ip;
 	int slot_base;
 
-	CallFrame() = default;
+	CallFrame();
 	CallFrame(std::shared_ptr<ObjFunction> func,std::vector<uint8_t>::iterator ip_iter, int slot_base);
 
 	//std::shared_ptr<Value> slots;
@@ -35,7 +35,7 @@ public:
 class VM
 {
 	
-	std::array<CallFrame, FRAMES_MAX > frames;
+	
 	int frame_count;//current height of the CallFrame stack; == frame.sixe()
 	//comment out chunk and its ip
 	// if we are commenting its ip then should there be an ip in the ObjFunction?
@@ -44,6 +44,7 @@ class VM
 	inline uint8_t read_byte(CallFrame& frame) ;
 	inline Value& read_constant(CallFrame& frame);
 	inline uint16_t read_short(CallFrame& frame);
+	std::array<CallFrame, FRAMES_MAX > frames;
 	std::vector<Value>stack;
 	std::shared_ptr<StringInterner> strings;
 	std::shared_ptr<StringInterner> globals;

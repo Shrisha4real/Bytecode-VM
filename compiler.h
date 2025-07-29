@@ -41,12 +41,14 @@ class LocalCompiler {
 	
 	
 public:
+	std::shared_ptr<LocalCompiler> enclosing;
 	std::shared_ptr<ObjFunction>function;
 	FunctionType type;
 	std::array<Local, UINT8_COUNT> locals;
 	int local_count;
 	int scope_depth;
-	LocalCompiler(FunctionType type);
+	LocalCompiler(FunctionType type, std::shared_ptr<LocalCompiler> enclosing);
+
 
 };
 
@@ -121,6 +123,8 @@ public:
 	int emit_jump(uint8_t instructions);
 	void patch_jump(int offset);
 	void for_statement();
+	void func_declaration();
+	void function(FunctionType type);
 private:
 	inline void debug_print_code();
 };

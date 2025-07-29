@@ -11,6 +11,7 @@
 #include"Object.h"
 #include"ParseRule.h"
 
+CallFrame::CallFrame() : slot_base(0) {};
 CallFrame::CallFrame(std::shared_ptr<ObjFunction> func,
 	std::vector<uint8_t>::iterator ip_iter,
 	int slot_base)

@@ -13,6 +13,16 @@
 #include "StringInterner.h"
 using namespace std::placeholders;
 
+LocalCompiler::LocalCompiler(FunctionType type, std::shared_ptr<LocalCompiler> enclosing) :
+	local_count(1),
+	scope_depth(0),
+	locals(),
+	type(type),
+	function(std::make_shared<ObjFunction>()),
+	enclosing(std::move(enclosing))
+{
+};
+
 
 /*
  * Function: contructor
@@ -22,7 +32,10 @@ using namespace std::placeholders;
 Compiler::Compiler( const std::string& source, std::shared_ptr<StringInterner>string_table) : source(source),  rules(static_cast<size_t>(token_type::TOKEN_EOF) + 1), string_table(string_table) {
 	scanner = new Scanner(this->source);
 	parser = new Parser(this->scanner);
-	current = std::make_shared<LocalCompiler>(FunctionType::TYPE_SCRIPT);
+	//std::shared_ptr<LocalCompiler> enclosing = current;
+	current = std::make_shared<LocalCompiler>(FunctionType::TYPE_SCRIPT , current);
+	current->enclosing = current;
+	//current = std::make_shared<LocalCompiler>(FunctionType::TYPE_SCRIPT );
 	rules[token_type::TOKEN_LEFT_PAREN] = {std::bind(&Compiler::grouping, this, _1), nullptr, Precedence::PREC_CALL};
 	rules[token_type::TOKEN_RIGHT_PAREN] = { nullptr,  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_LEFT_BRACE] = { nullptr,  nullptr, Precedence::PREC_NONE };
@@ -117,7 +130,7 @@ void Compiler::emit_bytes(uint8_t byte1, uint8_t byte2) {
 std::shared_ptr<ObjFunction> Compiler::end_compiler() {
 	this->emit_return();
 	debug_print_code();
-
+	current = current->enclosing;
 	return this->current->function;
 }
 
@@ -284,7 +297,10 @@ ParseRule* Compiler::get_rule(token_type type) {
 	return &this->rules[type];
 }
 void Compiler::declaration() {
-	if (match(token_type::TOKEN_VAR)) {
+	if (match(token_type::TOKEN_FUN)) {
+		func_declaration();
+	}
+	else if (match(token_type::TOKEN_VAR)) {
 		var_declaration();
 	}
 	else
@@ -381,7 +397,7 @@ void Compiler::var_declaration() {
 
 uint8_t Compiler::parse_variable(std::string message) {
 
-	this->parser->consume(token_type::TOKEN_IDENTIFIER, "variable declaration should start with var");
+	this->parser->consume(token_type::TOKEN_IDENTIFIER, message);
 	declare_variable();
 	if (current->scope_depth > 0) return 0;
 	return identifier_constant(parser->previous);
@@ -458,8 +474,6 @@ void Compiler::declare_variable() {
 }
 //FIXME the locals array is uninitialized
 
-LocalCompiler::LocalCompiler(FunctionType type) : local_count(1), scope_depth(0), locals() , type(type) , function(std::make_shared<ObjFunction>() ){};
-
 
 
 
@@ -493,6 +507,7 @@ int Compiler::resolve_local(std::shared_ptr<LocalCompiler>compiler, Token* name)
 }
 
 void Compiler::mark_initialized() {
+	if (current->scope_depth == 0) return;
 	current->locals[current->local_count-1].depth = current->scope_depth;
 }
 
@@ -604,5 +619,23 @@ void Compiler::emit_loop(int loop_start) {
 	if (offset > UINT16_MAX) parser->error("Loop body too largre");
 	emit_byte(static_cast<uint8_t>(offset >> 8 & 0xff));
 	emit_byte(static_cast<uint8_t>(offset & 0xff));
+
+}
+void Compiler::func_declaration() {
+	uint8_t global = parse_variable("Expect a function name");
+	mark_initialized();
+	function(FunctionType::TYPE_FUNCTION);
+	define_variable(global);
+
+}
+void Compiler::function(FunctionType type) {
+	LocalCompiler compiler(type , current);
+	begin_scope();
+	parser->consume(token_type::TOKEN_LEFT_PAREN, "Expect '(' after function name.");
+	parser->consume(token_type::TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
+	parser->consume(token_type::TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+	block();
+	std::shared_ptr<ObjFunction> function = end_compiler();
+	emit_bytes(OpCode::OP_CONSTANT, make_constant(Value::Obj(std::move(function))));
 
 }
