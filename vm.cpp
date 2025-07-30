@@ -208,7 +208,7 @@ InterpretResult VM::run() {
 
  			//stack.push_back((frame.slots + slot - 1)->clone());
 
-			stack.push_back(stack.at(frame.slot_base+slot-1).clone());
+			stack.push_back(stack.at(frame.slot_base+slot).clone());
 			break;
 		}
 		case OpCode::OP_SET_LOCAL: {
@@ -278,7 +278,7 @@ InterpretResult VM::run() {
 		}
 		case OpCode::OP_CALL: {
 			int arg_count = read_byte(frame);
-			if (!call_value(peek(arg_count), arg_count)); {
+			if (!call_value(peek(arg_count), arg_count)) {
 				return InterpretResult::INTERPRET_RUNTIME_ERROR;
 
 			}
@@ -288,7 +288,7 @@ InterpretResult VM::run() {
 		case OpCode::OP_RETURN: {
 			Value result = pop();
 			frame_count--;
-			if (frame_count == 0) {
+			if (frame_count == 1) {
 				Value value = pop();
 				std::cout << std::endl;
 				return InterpretResult::INTERPRET_OK;
