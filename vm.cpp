@@ -25,14 +25,14 @@ VM::VM() : frames() , frame_count(0) {
 };
 
 
-uint8_t VM::read_byte(CallFrame& frame) {
-	return *(frame.ip++);
+uint8_t VM::read_byte(CallFrame* frame) {
+	return *(frame->ip++);
 }
 
-Value& VM::read_constant(CallFrame& frame) {
+Value& VM::read_constant(CallFrame* frame) {
 	try {
 		uint8_t index = read_byte(frame);
-		return frame.function->chunk.values.at(index);
+		return frame->function->chunk.values.at(index);
 	}
 	catch (const std::out_of_range& e) {
 		runtimeError("Constant index out of range.");
@@ -42,7 +42,7 @@ Value& VM::read_constant(CallFrame& frame) {
 	}
 }
 
-std::shared_ptr<ObjString>  VM::read_string(CallFrame& frame) {
+std::shared_ptr<ObjString>  VM::read_string(CallFrame* frame) {
 	Value& top_value = read_constant(frame);
 	if (Value::is_string(top_value)) {
 		return Value::as_string(top_value);
@@ -51,14 +51,14 @@ std::shared_ptr<ObjString>  VM::read_string(CallFrame& frame) {
 	return nullptr;
 }
 
-uint16_t VM::read_short(CallFrame& frame) {
-	frame.ip += 2;
-	return static_cast<uint16_t>(*(frame.ip - 2) << 8 | *(frame.ip - 1));
+uint16_t VM::read_short(CallFrame* frame) {
+	frame->ip += 2;
+	return static_cast<uint16_t>(*(frame->ip - 2) << 8 | *(frame->ip - 1));
 }
 
 InterpretResult VM::run() {
 	std::cout << "\nexecuting run()\n";
-	CallFrame& frame = frames[frame_count - 1];
+	CallFrame* frame = &frames[frame_count - 1];
 
 	while (true) {
 		
@@ -83,9 +83,9 @@ InterpretResult VM::run() {
 			std::cout << " ]\t";
 		}*/
 		//std::cout << std::endl;
-  		Chunk* frame_ptr = &(frame.function->chunk);
+  		Chunk* frame_ptr = &(frame->function->chunk);
  		//CHECK the pointer values are apssed on to the function
-		Debug::disassemble_instruction(frame_ptr, static_cast<int>((frame.ip) - ((frame.function->chunk.code).begin())));
+		Debug::disassemble_instruction(frame_ptr, static_cast<int>((frame->ip) - ((frame->function->chunk.code).begin())));
 	
 		uint8_t instruction;
 		switch (instruction = read_byte(frame)) {
@@ -202,13 +202,13 @@ InterpretResult VM::run() {
 			uint8_t slot = read_byte(frame);
 			//CHECK slot -1
 			//stack.push_back(frame.function->chunk.values.at(frame.slot_base + static_cast<int>(slot) ).clone());
-			/*int stack_index = frame.slot_base + slot ;
+			/*int stack_index = frame->slot_base + slot ;
 			Value slot_value = frame.function->chunk.values.at(stack_index).clone();
 			stack.push_back(std::move(slot_value));*/
 
- 			//stack.push_back((frame.slots + slot - 1)->clone());
+ 			//stack.push_back((frame->slots + slot - 1)->clone());
 
-			stack.push_back(stack.at(frame.slot_base+slot).clone());
+			stack.push_back(stack.at(frame->slot_base+slot).clone());
 			break;
 		}
 		case OpCode::OP_SET_LOCAL: {
@@ -220,10 +220,10 @@ InterpretResult VM::run() {
 					//("Invalid local variable access.");
 					return INTERPRET_RUNTIME_ERROR;
 				}
-				Value& target = stack.at((frame.slot_base + slot)); // throws if slot is out of bounds
+				Value& target = stack.at((frame->slot_base + slot)); // throws if slot is out of bounds
 				target.set(peek(0));
 				
-				/*(frame.slot_base + slot)->set(peek(0));*/
+				/*(frame->slot_base + slot)->set(peek(0));*/
 
 			}
 			catch (const std::out_of_range& e) {
@@ -263,17 +263,17 @@ InterpretResult VM::run() {
 		}
 		case::OpCode::OP_JUMP_IF_FALSE: {
 			uint16_t offset = read_short(frame);
-			if (is_falsey(peek(0))) frame.ip += offset;
+			if (is_falsey(peek(0))) frame->ip += offset;
 			break;
 		}
 		case::OpCode::OP_JUMP: {
 			uint16_t offset = read_short(frame);
-			frame.ip += offset;
+			frame->ip += offset;
 			break;
 		}
 		case OpCode::OP_LOOP: {
 			uint16_t offset = read_short(frame);
-			frame.ip -= offset;
+			frame->ip -= offset;
 			break;
 		}
 		case OpCode::OP_CALL: {
@@ -282,13 +282,13 @@ InterpretResult VM::run() {
 				return InterpretResult::INTERPRET_RUNTIME_ERROR;
 
 			}
-			frame = frames[frame_count - 1];
+			frame = &frames[frame_count - 1];
 			break;
 		}
 		case OpCode::OP_RETURN: {
 			Value result = pop();
 			frame_count--;
-			if (frame_count == 1) {
+			if (frame_count == 0) {
 				Value value = pop();
 				std::cout << std::endl;
 				return InterpretResult::INTERPRET_OK;
@@ -297,7 +297,7 @@ InterpretResult VM::run() {
 			stack.resize(frames[frame_count].slot_base);
 
 			stack.push_back(std::move(result));
-			frame = frames[frame_count];
+			frame = &frames[frame_count-1];
 			break;
 		}
 
@@ -391,14 +391,14 @@ InterpretResult VM::intepret(const std::string& source) {
 }
 void VM::runtimeError(const std::string& message) {
 	std::cerr << message << "\n";
-	CallFrame& frame = frames[frame_count-1];
-	size_t instruction = std::distance(frame.function->chunk.code.begin(), frame.ip) - 1;
-	int line = frame.function->chunk.lines[instruction];
+	CallFrame* frame = &frames[frame_count-1];
+	size_t instruction = std::distance(frame->function->chunk.code.begin(), frame->ip) - 1;
+	int line = frame->function->chunk.lines[instruction];
 	std::cerr << "[line " << line << "] in script\n";
 	for (int i = frame_count - 1; i >= 0; i--) {
 		//CallFrame* frame = frames[i];
 		std::shared_ptr<ObjFunction> function = frames[i].function;
-		size_t instruction = static_cast<size_t>((frame.ip) - ((frame.function->chunk.code).begin()));
+		size_t instruction = static_cast<size_t>((frame->ip) - ((frame->function->chunk.code).begin()));
 		std::cerr << "[line " << function->chunk.lines[instruction]<<" ] in" << std::endl;
 
 		if (function->name == nullptr) {

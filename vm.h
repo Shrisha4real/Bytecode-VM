@@ -41,9 +41,9 @@ class VM
 	// if we are commenting its ip then should there be an ip in the ObjFunction?
 	/*std::shared_ptr<Chunk> chunk;
 	std::vector<uint8_t>::iterator ip;*/
-	inline uint8_t read_byte(CallFrame& frame) ;
-	inline Value& read_constant(CallFrame& frame);
-	inline uint16_t read_short(CallFrame& frame);
+	inline uint8_t read_byte(CallFrame* frame) ;
+	inline Value& read_constant(CallFrame* frame);
+	inline uint16_t read_short(CallFrame* frame);
 	std::array<CallFrame, FRAMES_MAX > frames;
 	std::vector<Value>stack;
 	std::shared_ptr<StringInterner> strings;
@@ -58,7 +58,7 @@ public:
 	void concatinate();
 	bool is_falsey(Value& value);
 	Value pop();
-	std::shared_ptr<ObjString> read_string(CallFrame& frame);
+	std::shared_ptr<ObjString> read_string(CallFrame* frame);
 	bool call_value(Value& callee, int arg_count);
 	bool call(std::shared_ptr<ObjFunction> function, int arg_count);
 
