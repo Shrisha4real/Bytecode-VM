@@ -29,7 +29,7 @@ void run_file(const string& filename);
 * if no arguement then, read from the cmd
 * if 1 argument, the argument is the location of the file conaining a dsl
 */
-int  main(int argc, const char* argv[]) {
+ int  main(int argc, const char* argv[]) {
 	// take the argument from the cmd if no arguement , by running read_prompt() 
 	if (argc == 1) {
 		read_prompt();

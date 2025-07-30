@@ -69,6 +69,8 @@ int Debug::disassemble_instruction(Chunk* chunk,  int offset) {
 		return jump_instruction(chunk, "OP_JUMP_IF_FALSE", 1, offset);
 	case OpCode::OP_LOOP:
 		return jump_instruction(chunk, "OP_LOOP", -1, offset);
+	case OpCode::OP_CALL:
+		return byte_instruction(chunk, "OP_CALL", offset);
 
 	default:
 		std::cout << "Unknown op code" << instruction << std::endl;

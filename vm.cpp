@@ -58,6 +58,8 @@ uint16_t VM::read_short(CallFrame& frame) {
 
 InterpretResult VM::run() {
 	std::cout << "\nexecuting run()\n";
+	CallFrame& frame = frames[frame_count - 1];
+
 	while (true) {
 		
 		//std::cout << "run() stackprint\t";
@@ -81,8 +83,7 @@ InterpretResult VM::run() {
 			std::cout << " ]\t";
 		}*/
 		//std::cout << std::endl;
-		CallFrame& frame = frames[frame_count-1];
-		Chunk* frame_ptr = &(frame.function->chunk);
+  		Chunk* frame_ptr = &(frame.function->chunk);
  		//CHECK the pointer values are apssed on to the function
 		Debug::disassemble_instruction(frame_ptr, static_cast<int>((frame.ip) - ((frame.function->chunk.code).begin())));
 	
@@ -200,11 +201,14 @@ InterpretResult VM::run() {
 		case OpCode::OP_GET_LOCAL: {
 			uint8_t slot = read_byte(frame);
 			//CHECK slot -1
-			stack.push_back(stack.at(frame.slot_base + slot ).clone());
+			//stack.push_back(frame.function->chunk.values.at(frame.slot_base + static_cast<int>(slot) ).clone());
+			/*int stack_index = frame.slot_base + slot ;
+			Value slot_value = frame.function->chunk.values.at(stack_index).clone();
+			stack.push_back(std::move(slot_value));*/
 
  			//stack.push_back((frame.slots + slot - 1)->clone());
 
-			//stack.push_back(stack.at(slot-1).clone());
+			stack.push_back(stack.at(frame.slot_base+slot-1).clone());
 			break;
 		}
 		case OpCode::OP_SET_LOCAL: {
@@ -212,7 +216,8 @@ InterpretResult VM::run() {
 				int slot = read_byte(frame) ;
 				if (slot < 0 || slot >= static_cast<int>(stack.size())) {
 					std::cerr << "Runtime Error: Invalid stack slot access: " << slot << "\n";
-					runtimeError("Invalid local variable access.");
+					
+					//("Invalid local variable access.");
 					return INTERPRET_RUNTIME_ERROR;
 				}
 				Value& target = stack.at((frame.slot_base + slot)); // throws if slot is out of bounds
@@ -271,28 +276,29 @@ InterpretResult VM::run() {
 			frame.ip -= offset;
 			break;
 		}
-		case OpCode::OP_RETURN: {
-			/*if (stack.empty()) {
+		case OpCode::OP_CALL: {
+			int arg_count = read_byte(frame);
+			if (!call_value(peek(arg_count), arg_count)); {
 				return InterpretResult::INTERPRET_RUNTIME_ERROR;
+
 			}
-			Value top = std::move(stack.back());
-			stack.pop_back();
-			std::cout << "top = ";
-			std::visit([](auto&& arg) {
-				using T = std::decay_t<decltype(arg)>;
-				if constexpr (std::is_same_v<T, std::monostate>) {
-					std::cout << "nil";
-				}
-				else if constexpr (std::is_same_v< T, std::shared_ptr<Object>>) {
-					std::cout << "object:\t";
-					arg->print();
-				}
-				else {
-					std::cout << arg;
-				}
-				}, top.data);*/
-			std::cout << std::endl;
-			return InterpretResult::INTERPRET_OK;
+			frame = frames[frame_count - 1];
+			break;
+		}
+		case OpCode::OP_RETURN: {
+			Value result = pop();
+			frame_count--;
+			if (frame_count == 0) {
+				Value value = pop();
+				std::cout << std::endl;
+				return InterpretResult::INTERPRET_OK;
+			}
+			
+			stack.resize(frames[frame_count].slot_base);
+
+			stack.push_back(std::move(result));
+			frame = frames[frame_count];
+			break;
 		}
 
 			
@@ -370,7 +376,7 @@ InterpretResult VM::intepret(const std::string& source) {
 	}
 	//this->chunk = chunk;
 	//this->ip = (chunk->code).begin();
-	CallFrame frame(function, function->chunk.code.begin(),0 );
+	CallFrame frame(function, function->chunk.code.begin(),0);
 
 	stack.push_back(Value::Obj(function));
 
@@ -389,12 +395,26 @@ void VM::runtimeError(const std::string& message) {
 	size_t instruction = std::distance(frame.function->chunk.code.begin(), frame.ip) - 1;
 	int line = frame.function->chunk.lines[instruction];
 	std::cerr << "[line " << line << "] in script\n";
+	for (int i = frame_count - 1; i >= 0; i--) {
+		//CallFrame* frame = frames[i];
+		std::shared_ptr<ObjFunction> function = frames[i].function;
+		size_t instruction = static_cast<size_t>((frame.ip) - ((frame.function->chunk.code).begin()));
+		std::cerr << "[line " << function->chunk.lines[instruction]<<" ] in" << std::endl;
+
+		if (function->name == nullptr) {
+			std::cerr<< " no name: script\n";
+		}
+		else {
+			std::cout<< function->name->get_string();
+		}
+	}
 	this->stack.clear();
 }
 
 
 Value& VM::peek(int distance) {
-	if (distance > this->stack.size() - 1) {
+	if 
+		(distance > this->stack.size() - 1) {
 		std::cerr << "Unreachable peek\n";
 	}
 	return this->stack.at(this->stack.size() - 1 - distance);
@@ -459,4 +479,29 @@ Value VM::pop() {
 	Value val = std::move(stack.back());
 	stack.pop_back();
 	return val;
+}
+bool VM::call_value(Value& callee, int arg_count) {
+	if (Value::is_obj(callee)) {
+		switch (callee.as_obj()->obj_type()) {
+		case ObjType::OBJ_FUNCTION: {
+			return call(Value::as_function(callee), arg_count);
+		}
+		default:
+			break;
+		}
+	}
+	runtimeError("Can only call functions and classes.");
+	return false;
+}
+bool VM::call(std::shared_ptr<ObjFunction> function, int arg_count) {
+	if (arg_count != function->arity) {
+		std::string errorMessage = "expected " + std::to_string(function->arity) + " arguments but got " + std::to_string(arg_count) + " arguments";
+		runtimeError(errorMessage);
+		return false;
+	}
+	int slot_base = stack.size() - arg_count - 1;
+	CallFrame frame(function, function->chunk.code.begin(), slot_base);
+	frames[frame_count] = frame;
+	frame_count++;
+	return true;
 }

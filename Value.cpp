@@ -9,10 +9,18 @@ Value::Value(ValueType t, std::variant<std::monostate, bool, double, std::shared
     : type(t), data(std::move(d)) {
 }
 
+
 Value Value::clone() const {
     if (std::holds_alternative<std::shared_ptr<Object>>(data)) {
+        //std::cout << "Value holds object data\n";
         std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(data);
-        return Value(type, std::shared_ptr<Object>(obj->clone())); // assuming Object is copyable
+
+        if (!obj) {
+            std::cerr << "[Warning] clone() called on Value containing null Object pointer.\n";
+            return Value(type, std::shared_ptr<Object>(nullptr));
+        }
+
+        return Value(type, std::shared_ptr<Object>(obj->clone()));
     }
     return Value(type, data);
 }

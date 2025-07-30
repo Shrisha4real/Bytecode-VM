@@ -19,7 +19,7 @@ LocalCompiler::LocalCompiler(FunctionType type, std::shared_ptr<LocalCompiler> e
 	locals(),
 	type(type),
 	function(std::make_shared<ObjFunction>()),
-	enclosing(std::move(enclosing))
+	enclosing(enclosing)
 {
 };
 
@@ -33,10 +33,10 @@ Compiler::Compiler( const std::string& source, std::shared_ptr<StringInterner>st
 	scanner = new Scanner(this->source);
 	parser = new Parser(this->scanner);
 	//std::shared_ptr<LocalCompiler> enclosing = current;
-	current = std::make_shared<LocalCompiler>(FunctionType::TYPE_SCRIPT , current);
-	current->enclosing = current;
+	current = nullptr;
+	
 	//current = std::make_shared<LocalCompiler>(FunctionType::TYPE_SCRIPT );
-	rules[token_type::TOKEN_LEFT_PAREN] = {std::bind(&Compiler::grouping, this, _1), nullptr, Precedence::PREC_CALL};
+	rules[token_type::TOKEN_LEFT_PAREN] = {std::bind(&Compiler::grouping, this, _1), std::bind(&Compiler::call, this, _1), Precedence::PREC_CALL};
 	rules[token_type::TOKEN_RIGHT_PAREN] = { nullptr,  nullptr, Precedence::PREC_NONE};
 	rules[token_type::TOKEN_LEFT_BRACE] = { nullptr,  nullptr, Precedence::PREC_NONE };
 	rules[token_type::TOKEN_RIGHT_BRACE] = { nullptr,  nullptr, Precedence::PREC_NONE };
@@ -82,7 +82,7 @@ Compiler::Compiler( const std::string& source, std::shared_ptr<StringInterner>st
 
 void Compiler::debug_print_code() {
 	if (!this->parser->had_error) {
-		Debug::disassemble_chuck(this->current_chunk(), current->function->name->get_string());
+		Debug::disassemble_chuck(this->current_chunk(), (current->function->name == nullptr) ? " <script> ": current->function->name->get_string() );
 	}
 }
 
@@ -96,7 +96,15 @@ Chunk* Compiler::current_chunk() {
  * Returns : true if the expression is valid else(or compilation is sucessful else return false.
  */
 std::shared_ptr<ObjFunction> Compiler::compile() {
-
+	//init_compiler
+	std::shared_ptr<LocalCompiler> compiler = std::make_shared<LocalCompiler>(FunctionType::TYPE_SCRIPT, current);
+	current = compiler;
+	compiler->enclosing = current;
+	//init_compiler
+	if (current->type != FunctionType::TYPE_SCRIPT) {
+		current->function->name = string_table->copy_string(parser->previous.start,
+			parser->previous.length);
+	}
 	this->parser->advance();//sets the first token as the current token to be parsed
 	while (!match(token_type::TOKEN_EOF)) {
 		declaration();
@@ -129,9 +137,10 @@ void Compiler::emit_bytes(uint8_t byte1, uint8_t byte2) {
  */
 std::shared_ptr<ObjFunction> Compiler::end_compiler() {
 	this->emit_return();
+	std::shared_ptr<ObjFunction> function = current->function;
 	debug_print_code();
 	current = current->enclosing;
-	return this->current->function;
+	return function;
 }
 
 
@@ -140,6 +149,8 @@ std::shared_ptr<ObjFunction> Compiler::end_compiler() {
  * Purpose : adds the return instructions into the VM code stack
  */
 void Compiler::emit_return() {
+	this->emit_byte(OpCode::OP_NIL);
+
 	this->emit_byte(OpCode::OP_RETURN);
 }
 
@@ -303,8 +314,7 @@ void Compiler::declaration() {
 	else if (match(token_type::TOKEN_VAR)) {
 		var_declaration();
 	}
-	else
-	{
+	else {
 		statement();
 	}
 	if (this->parser->panic_mode) synchronise();
@@ -629,13 +639,54 @@ void Compiler::func_declaration() {
 
 }
 void Compiler::function(FunctionType type) {
-	LocalCompiler compiler(type , current);
+	//init_compiler
+	std::shared_ptr<LocalCompiler> compiler = std::make_shared<LocalCompiler>(type, current);
+	compiler->enclosing = current;
+	current = compiler;
+	
+	//init_compiler
+	//LocalCompiler compiler(type , current);
+	//compiler.enclosing = current;
+	if (compiler->type != FunctionType::TYPE_SCRIPT) {
+		compiler->function->name = string_table->copy_string(parser->previous.start,
+			parser->previous.length);
+	}
 	begin_scope();
 	parser->consume(token_type::TOKEN_LEFT_PAREN, "Expect '(' after function name.");
+	if (!check(TOKEN_RIGHT_PAREN)) {
+		do {
+			current->function->arity++;
+			if (current->function->arity > 255) {
+				parser->error_at_current("Can't have more than 255 parameters.");
+			}
+			uint8_t constant = parse_variable("Expect parameter name.");
+			define_variable(constant);
+		} while (match(TOKEN_COMMA));
+	}
 	parser->consume(token_type::TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
 	parser->consume(token_type::TOKEN_LEFT_BRACE, "Expect '{' before function body.");
 	block();
+	//std::shared_ptr<LocalCompiler> end = std::make_shared<LocalCompiler>(compiler);
 	std::shared_ptr<ObjFunction> function = end_compiler();
 	emit_bytes(OpCode::OP_CONSTANT, make_constant(Value::Obj(std::move(function))));
 
+}
+void Compiler::call(bool can_assign) {
+	uint8_t arg_count = argument_list();
+	emit_bytes(OpCode::OP_CALL, arg_count);
+}
+uint8_t Compiler::argument_list() {
+	uint8_t arg_count = 0;
+	if (!check(TOKEN_RIGHT_PAREN)) {
+		do {
+			expression();
+			
+			if (arg_count == 255) {
+				parser->error("Cant have more than 255 arguments");
+			}
+			arg_count++;
+		} while (match(TOKEN_COMMA));
+	}
+	parser->consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
+	return arg_count;
 }

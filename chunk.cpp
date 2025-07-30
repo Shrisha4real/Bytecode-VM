@@ -9,13 +9,20 @@
 #include"Value.h"
 
 size_t Chunk::add_constant( Value&& value) {
+    if (Value::is_obj(value)) {
+        std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(value.data);
+        if (!obj) {
+            std::cerr << "[Info] Constant added: " << Value::as_string(value) << "\n";
+            std::cerr << "[Error] Trying to add null object to chunk constants!\n";
+        }
+    }
 	(this->values).push_back(std::move(value));
 	return ((this->values).size() - 1);
 
 }  
 
 void Chunk::write_chunk(uint8_t byte , int line){
-	(this->code).push_back(byte);
+	(this->code).push_back(byte); 
 	(this->lines).push_back(line);
 }
 

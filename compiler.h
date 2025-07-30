@@ -47,7 +47,8 @@ public:
 	std::array<Local, UINT8_COUNT> locals;
 	int local_count;
 	int scope_depth;
-	LocalCompiler(FunctionType type, std::shared_ptr<LocalCompiler> enclosing);
+	//std::shared_ptr<ObjFunction>end_compiler(std::shared_ptr<LocalCompiler> compiler);
+	LocalCompiler(FunctionType type, std::shared_ptr<LocalCompiler> enclosing=nullptr);
 
 
 };
@@ -125,6 +126,9 @@ public:
 	void for_statement();
 	void func_declaration();
 	void function(FunctionType type);
+	void call(bool can_assign);
+	uint8_t argument_list();
+
 private:
 	inline void debug_print_code();
 };

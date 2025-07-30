@@ -59,6 +59,8 @@ public:
 	bool is_falsey(Value& value);
 	Value pop();
 	std::shared_ptr<ObjString> read_string(CallFrame& frame);
+	bool call_value(Value& callee, int arg_count);
+	bool call(std::shared_ptr<ObjFunction> function, int arg_count);
 
 private:	
 
