@@ -82,9 +82,11 @@ NativeFn Value::as_native(const Value& v) {
     std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(v.data);
 
     std::shared_ptr<ObjNative> native_obj = std::dynamic_pointer_cast<ObjNative>(obj);
-    return native_obj->function;
+    if (!native_obj) return nullptr;
 
+    return native_obj->function;
 }
+
 
 void Value::set(Value& other) {
     type = other.type;

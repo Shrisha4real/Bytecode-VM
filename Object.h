@@ -3,7 +3,12 @@
 #include<iostream>
 #include<functional>
 #include "chunk.h"
-typedef Value(*NativeFn)(int, int);//value is pointing to the value on the stack, in my case the index of the value on the stack
+//typedef Value(*NativeFn)(int, int);
+using NativeFn = std::function<Value(int, int)>;
+
+// call it like: native(argCount, stack_index);
+// because you've captured `this` already
+//value is pointing to the value on the stack, in my case the index of the value on the stack
 
 typedef enum {
 	OBJ_STRING,OBJ_FUNCTION, OBJ_NATIVE

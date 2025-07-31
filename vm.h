@@ -63,9 +63,11 @@ public:
 	bool call_value(Value& callee, int arg_count);
 	bool call(std::shared_ptr<ObjFunction> function, int arg_count);
 	void define_native(const std::string& name, NativeFn function);
-	static Value clock_native(int arg_count, int args);
+	Value clock_native(int arg_count, int args);
+	//Value load_native(int argCount, int stack_index);
 
 private:	
 
 };
 
+ 

@@ -367,7 +367,12 @@ void VM::binary_op(char op) {
  * Returns : the status of interpretation
  */
 InterpretResult VM::intepret(const std::string& source) {
-	this->define_native("clock", VM::clock_native);
+	//this->define_native("clock", VM::clock_native);
+	//this->define_native("clock", load_native);
+
+	define_native("clock", [this](int argc, int idx) {
+		return this->clock_native(argc, idx);
+		});
 
 	Compiler compiler(source , this->strings);
 
@@ -419,7 +424,9 @@ void VM::runtimeError(const std::string& message) {
 Value& VM::peek(int distance) {
 	if 
 		(distance > this->stack.size() - 1) {
-		std::cerr << "Unreachable peek\n";
+		runtimeError("Unreachable peek");
+		std::exit(404);
+
 	}
 	return this->stack.at(this->stack.size() - 1 - distance);
 }
@@ -532,6 +539,30 @@ void VM::define_native(const std::string& name, NativeFn function) {
 }
 
 Value VM::clock_native(int argCount, int stackIndex) {
+	if (argCount != 0) {
+			runtimeError("clock() takes only 1 argument");
+			std::exit(404);
+	
+	}
+
 	double seconds = static_cast<double>(std::clock()) / CLOCKS_PER_SEC;
 	return Value::Number(seconds);
 }
+
+//Value VM::load_native(int argCount, int stack_index) {
+//    if (argCount != 1) {
+//        std::cerr << "load() takes exactly one argument.\n";
+//        return Value::Nil();
+//    }
+//
+//    Value arg = stack[stack_index]; // first arg is at this index
+//    if (!arg.is_obj() || arg.as_obj()->type() != ObjType::STRING) {
+//        std::cerr << "Argument to load() must be a string.\n";
+//        return Value::Nil();
+//    }
+//
+//    std::shared_ptr<ObjString> filename = std::static_pointer_cast<ObjString>(arg.as_obj());
+//    std::cout << "Would load file: " << filename->str() << "\n";
+//
+//    return Value::Nil(); // or whatever logic you want
+//}

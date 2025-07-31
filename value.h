@@ -1,7 +1,7 @@
 #pragma once
 #include<iostream>
 #include <variant>
-
+#include<functional>
 
 class Object;
 class ObjString;
@@ -11,8 +11,7 @@ class VM;
 class Value;
 enum class ValueType{BOOL, NUMBER , NIL , OBJ};
 
-typedef Value(*NativeFn)(int, int);
-// FIXME: use templates instead
+using NativeFn = std::function<Value(int, int)>;// FIXME: use templates instead
 
 /*
  methods with name <value_type> is for creating the objects. Eg. Bool(bool b)

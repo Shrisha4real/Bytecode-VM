@@ -109,11 +109,14 @@ void ObjNative::print() const {
 }
 
 bool ObjNative::compare(const Object* other) const {
-    if (other->obj_type() != this->obj_type()) return false;
+	if (other->obj_type() != this->obj_type()) return false;
+	auto* o = dynamic_cast<const ObjNative*>(other);
+	if (!o) return false;
 
-    const ObjNative* other_func = dynamic_cast<const ObjNative*>(other);
-    if (!other_func) return false; 
-    return other_func->function == this->function;
+	auto this_ptr = this->function.template target<Value(*)(int, int)>();
+	auto other_ptr = o->function.template target<Value(*)(int, int)>();
+
+	return this_ptr && other_ptr && *this_ptr == *other_ptr;
 }
 
  std::shared_ptr<Object> ObjNative::clone() const  {

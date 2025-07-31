@@ -2,7 +2,7 @@ fun fib(n) {
   if (n < 2) return n;
   return fib(n - 2) + fib(n - 1);
 }
-var start = clock();
-print fib(7);
+var start = clock(1);
+print fib(17);
 print start;
-print clock() - start;
+print clock(1) - start;
