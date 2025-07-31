@@ -6,10 +6,12 @@
 class Object;
 class ObjString;
 class ObjFunction;
+class ObjNative;
 class VM;
+class Value;
 enum class ValueType{BOOL, NUMBER , NIL , OBJ};
 
-
+typedef Value(*NativeFn)(int, int);
 // FIXME: use templates instead
 
 /*
@@ -52,6 +54,7 @@ public:
 	std::shared_ptr<Object> as_obj() const;
 	static std::shared_ptr<ObjString> as_string(const Value& value);
 	static std::shared_ptr<ObjFunction> as_function(const Value& value);
+	static NativeFn as_native(const Value& v);
 
 	std::shared_ptr<Object> transfer_obj();
 	//ObjString* as_string() const;
@@ -66,5 +69,6 @@ public:
 	static bool is_obj(const Value& v);
 	static bool is_string(const Value& v);
 	static bool is_function(const Value& v);
+	static bool is_native(const Value& v);
 
 };

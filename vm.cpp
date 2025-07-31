@@ -10,6 +10,7 @@
 #include"Table.h"
 #include"Object.h"
 #include"ParseRule.h"
+#include <ctime>
 
 CallFrame::CallFrame() : slot_base(0) {};
 CallFrame::CallFrame(std::shared_ptr<ObjFunction> func,
@@ -262,8 +263,10 @@ InterpretResult VM::run() {
 			break;
 		}
 		case::OpCode::OP_JUMP_IF_FALSE: {
-			uint16_t offset = read_short(frame);
-			if (is_falsey(peek(0))) frame->ip += offset;
+ 			uint16_t offset = read_short(frame);
+			if (is_falsey(peek(0))) {
+				frame->ip += offset;
+			}
 			break;
 		}
 		case::OpCode::OP_JUMP: {
@@ -350,7 +353,7 @@ void VM::binary_op(char op) {
 		stack.push_back(Value::Bool(a > b));
 		break;
 	case'<':
-		stack.push_back(Value::Bool(a > b));
+		stack.push_back(Value::Bool(a < b));
 		break;
 	default:
 		std::cerr << "Invalid operator!\n";
@@ -364,6 +367,7 @@ void VM::binary_op(char op) {
  * Returns : the status of interpretation
  */
 InterpretResult VM::intepret(const std::string& source) {
+	this->define_native("clock", VM::clock_native);
 
 	Compiler compiler(source , this->strings);
 
@@ -486,6 +490,15 @@ bool VM::call_value(Value& callee, int arg_count) {
 		case ObjType::OBJ_FUNCTION: {
 			return call(Value::as_function(callee), arg_count);
 		}
+		case ObjType::OBJ_NATIVE: {
+			NativeFn native = Value::as_native(callee);
+			int arg_start = static_cast<int>(stack.size()) - arg_count;
+			Value result = native(arg_count, arg_start);
+			stack.erase(stack.end() - (arg_count + 1), stack.end());
+			stack.push_back(std::move(result));
+			return true;
+
+		}
 		default:
 			break;
 		}
@@ -504,4 +517,21 @@ bool VM::call(std::shared_ptr<ObjFunction> function, int arg_count) {
 	frames[frame_count] = frame;
 	frame_count++;
 	return true;
+}
+
+
+void VM::define_native(const std::string& name, NativeFn function) {
+	auto nameObj = globals->copy_string(name.data(), static_cast<int>(name.size()));
+	auto nativeObj = std::make_shared<ObjNative>(function);
+
+	stack.push_back(Value::Obj(nameObj));
+	stack.push_back(Value::Obj(nativeObj));
+	globals->get_table()->insert(nameObj,stack[1]);
+	stack.pop_back();
+	stack.pop_back();
+}
+
+Value VM::clock_native(int argCount, int stackIndex) {
+	double seconds = static_cast<double>(std::clock()) / CLOCKS_PER_SEC;
+	return Value::Number(seconds);
 }

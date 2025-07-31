@@ -63,7 +63,7 @@ std::shared_ptr<ObjString> Value::as_string(const Value& v) {
     std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(v.data);
 
     std::shared_ptr<ObjString> string = std::dynamic_pointer_cast<ObjString>(obj);
-    if (!string)std::cout << "not a function object\n";
+    if (!string)std::cout << "not a string object\n";
 
     return string;
 }
@@ -75,6 +75,15 @@ std::shared_ptr<ObjFunction> Value::as_function(const Value& v) {
     std::shared_ptr<ObjFunction> function = std::dynamic_pointer_cast<ObjFunction>(obj);
     if (!function)std::cout << "not a function object\n";
     return function;
+}
+NativeFn Value::as_native(const Value& v) {
+    if (!std::holds_alternative<std::shared_ptr<Object>>(v.data)) return nullptr;
+
+    std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(v.data);
+
+    std::shared_ptr<ObjNative> native_obj = std::dynamic_pointer_cast<ObjNative>(obj);
+    return native_obj->function;
+
 }
 
 void Value::set(Value& other) {
@@ -121,6 +130,12 @@ bool Value::is_string(const Value& v) {
 bool Value::is_function(const Value& v) {
     if (std::holds_alternative<std::shared_ptr<Object>>(v.data)) {
         return v.as_obj()->obj_type() == ObjType::OBJ_FUNCTION;
+    }
+    return false;
+}
+bool Value::is_native(const Value& v) {
+    if (std::holds_alternative<std::shared_ptr<Object>>(v.data)) {
+        return v.as_obj()->obj_type() == ObjType::OBJ_NATIVE;
     }
     return false;
 }

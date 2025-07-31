@@ -12,6 +12,7 @@
 #include<utility>
 #include<unordered_map>
 #include<array>
+#include<string>
 #include"StringInterner.h"
 #define FRAMES_MAX 64
 
@@ -61,6 +62,8 @@ public:
 	std::shared_ptr<ObjString> read_string(CallFrame* frame);
 	bool call_value(Value& callee, int arg_count);
 	bool call(std::shared_ptr<ObjFunction> function, int arg_count);
+	void define_native(const std::string& name, NativeFn function);
+	static Value clock_native(int arg_count, int args);
 
 private:	
 

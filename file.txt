@@ -1,4 +1,8 @@
-fun d(x, y){
-	return (x+y);
+fun fib(n) {
+  if (n < 2) return n;
+  return fib(n - 2) + fib(n - 1);
 }
-print (d("Shrisha needs" , " sleep"));
+var start = clock();
+print fib(7);
+print start;
+print clock() - start;

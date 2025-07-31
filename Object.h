@@ -1,11 +1,12 @@
 #pragma once
 #include<string>
 #include<iostream>
+#include<functional>
 #include "chunk.h"
-
+typedef Value(*NativeFn)(int, int);//value is pointing to the value on the stack, in my case the index of the value on the stack
 
 typedef enum {
-	OBJ_STRING,OBJ_FUNCTION
+	OBJ_STRING,OBJ_FUNCTION, OBJ_NATIVE
 } ObjType;
 
 class Object
@@ -59,4 +60,17 @@ public:
 	virtual bool compare(const Object* other) const override;
 	virtual std::shared_ptr<Object> clone() const override;
 	~ObjFunction() = default;
+};
+
+class ObjNative : public Object {
+public:
+	NativeFn function;
+
+	ObjNative(NativeFn fn);
+	ObjNative(const ObjNative& other);
+	inline virtual void print() const override;
+	virtual bool compare(const Object* other) const override;
+	virtual std::shared_ptr<Object> clone() const override;
+
+	
 };

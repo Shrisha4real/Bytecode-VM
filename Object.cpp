@@ -1,5 +1,6 @@
 #include "chunk.h"
 #include "Object.h"
+#include<functional>
 
 
 Object::Object(const Object& other) {
@@ -97,4 +98,24 @@ bool ObjFunction::compare(const Object* other)const {
 }
 std::shared_ptr<Object> ObjFunction::clone()const {
 	return std::make_shared<ObjFunction>(*this);
+}
+
+ObjNative::ObjNative(NativeFn func) : Object(ObjType::OBJ_NATIVE), function(func) {};
+ObjNative::ObjNative(const ObjNative& other) :Object(ObjType::OBJ_NATIVE) {
+	function = other.function;
+}
+void ObjNative::print() const {
+	printf("<native fn>");
+}
+
+bool ObjNative::compare(const Object* other) const {
+    if (other->obj_type() != this->obj_type()) return false;
+
+    const ObjNative* other_func = dynamic_cast<const ObjNative*>(other);
+    if (!other_func) return false; 
+    return other_func->function == this->function;
+}
+
+ std::shared_ptr<Object> ObjNative::clone() const  {
+	return std::make_shared<ObjNative>(*this);
 }
