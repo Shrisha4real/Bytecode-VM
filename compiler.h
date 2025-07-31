@@ -128,6 +128,7 @@ public:
 	void function(FunctionType type);
 	void call(bool can_assign);
 	uint8_t argument_list();
+	void return_statement();
 
 private:
 	inline void debug_print_code();

@@ -333,6 +333,9 @@ void Compiler::statement() {
 	else if (match(token_type::TOKEN_IF)) {
 		if_statement();
 	}
+	else if (match(token_type::TOKEN_RETURN)) {
+		return_statement();
+	}
 	else if (match(token_type::TOKEN_WHILE)) {
 		while_statement();
 	}
@@ -689,4 +692,19 @@ uint8_t Compiler::argument_list() {
 	}
 	parser->consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
 	return arg_count;
+}
+void Compiler::return_statement(){
+	if (current->type == TYPE_SCRIPT) {
+		parser->error("Can't return from top-level code.");
+	}
+	if (match(token_type::TOKEN_SEMICOLON)) {
+		emit_return();
+
+	}
+	else {
+		expression();
+		parser->consume(token_type::TOKEN_SEMICOLON, "Expect a ; after return value");
+		emit_byte(OpCode::OP_RETURN);
+
+	}
 }

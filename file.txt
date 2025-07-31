@@ -1,5 +1,4 @@
 fun d(x, y){
-	print(x+y);
+	return (x+y);
 }
-d("Shrisha needs" , " sleep");
-print "hello";
+print (d("Shrisha needs" , " sleep"));
