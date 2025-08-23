@@ -5,7 +5,7 @@
 Value:: Value()
     : type(ValueType::NIL), data(std::monostate{}) {
 }
-Value::Value(ValueType t, std::variant<std::monostate, bool, double, std::shared_ptr<Object>> d)
+Value::Value(ValueType t, std::variant<std::monostate, bool, double, std::shared_ptr<Object>, py::object> d)
     : type(t), data(std::move(d)) {
 }
 
@@ -40,6 +40,10 @@ Value Value::Bool(bool b) {
 Value Value::Obj(std::shared_ptr<Object>obj) {
     return{ ValueType::OBJ , std::move(obj)};
 }
+Value Value::PyObject(py::object obj) {
+    return{ ValueType::PY_OBJ, obj };
+}
+
 
 double Value::as_number() const {
     return std::get<double>(this->data);
@@ -57,6 +61,9 @@ std::shared_ptr<Object> Value::as_obj() const {
     return std::get<std::shared_ptr<Object>>(this->data);
 }
 
+py::object Value::as_py_object()const {
+    return std::get<py::object>(this->data);
+}
 std::shared_ptr<ObjString> Value::as_string(const Value& v) {
     if (!std::holds_alternative<std::shared_ptr<Object>>(v.data)) return nullptr;
 
@@ -76,6 +83,7 @@ std::shared_ptr<ObjFunction> Value::as_function(const Value& v) {
     if (!function)std::cout << "not a function object\n";
     return function;
 }
+
 NativeFn Value::as_native(const Value& v) {
     if (!std::holds_alternative<std::shared_ptr<Object>>(v.data)) return nullptr;
 
@@ -106,8 +114,8 @@ std::shared_ptr<Object> Value::transfer_obj() {
 //}
 
 bool Value::is_bool(const Value& v) {
-    if (v.type != ValueType::BOOL) return false;
-    return std::get<bool>(v.data);
+    return (v.type == ValueType::BOOL);
+    //return std::get<bool>(v.data);
     
 }
 bool Value::is_number(const Value& v) {
@@ -141,6 +149,10 @@ bool Value::is_native(const Value& v) {
     }
     return false;
 }
+bool Value::is_py_obj(const Value& v) {
+    
+    return (v.type == ValueType::PY_OBJ);
+}
 bool Value::valuesEqual(Value& a, Value& b) {
     if (a.type != b.type) return false;
     switch (a.type) {
@@ -170,9 +182,18 @@ void Value::print_value(const Value& value) {
             
             arg->print();  
         }
-        else {
+        else if constexpr (std::is_same_v<T,bool >) {
             std::cout << arg;
+        }
+        else if constexpr (std::is_same_v<T, double >) {
+             std::cout << arg;
+        }
+        else if constexpr (std::is_same_v<T,py::object >) {
+            std::cout << "Loaded dataset with shape: "
+                << std::string(py::str(arg.attr("shape")))
+                << std::endl;
         }
         }, value.data);
     std::cout << std::endl;
 }
+

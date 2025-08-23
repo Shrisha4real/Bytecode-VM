@@ -11,7 +11,7 @@ using NativeFn = std::function<Value(int, int)>;
 //value is pointing to the value on the stack, in my case the index of the value on the stack
 
 typedef enum {
-	OBJ_STRING,OBJ_FUNCTION, OBJ_NATIVE
+	OBJ_STRING,OBJ_FUNCTION, OBJ_NATIVE, OBJ_PYTHON
 } ObjType;
 
 class Object
@@ -78,4 +78,15 @@ public:
 	virtual std::shared_ptr<Object> clone() const override;
 
 	
+};
+
+class ObjPython : public Object {
+public:
+	py::object py_object;
+	ObjPython(py::object obj);
+	ObjPython(const ObjPython& other);
+	void print() const override;
+	bool compare(const Object* other) const override;
+	std::shared_ptr<Object> clone() const override;
+	~ObjPython() = default;
 };

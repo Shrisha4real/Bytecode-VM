@@ -2,14 +2,18 @@
 #include<iostream>
 #include <variant>
 #include<functional>
+#include <pybind11/embed.h>
+namespace py = pybind11;
+
 
 class Object;
 class ObjString;
 class ObjFunction;
 class ObjNative;
+class ObjPython;
 class VM;
 class Value;
-enum class ValueType{BOOL, NUMBER , NIL , OBJ};
+enum class ValueType{BOOL, NUMBER , NIL , OBJ, PY_OBJ};
 
 using NativeFn = std::function<Value(int, int)>;// FIXME: use templates instead
 
@@ -23,9 +27,9 @@ class Value {
 public:
 	std::shared_ptr<VM>vm;
 	ValueType type;
-	std::variant < std::monostate, bool, double, std::shared_ptr<Object>> data;
+	std::variant < std::monostate, bool, double, std::shared_ptr<Object>, py::object> data;
 	Value();
-	Value(ValueType t, std::variant<std::monostate, bool, double, std::shared_ptr<Object>> d);
+	Value(ValueType t, std::variant<std::monostate, bool, double, std::shared_ptr<Object>, py::object> d);
 	Value(Value&& other) noexcept
 		: type(other.type), data(std::move(other.data)) {
 	}
@@ -47,13 +51,17 @@ public:
 	static Value Nil();
 	static Value Number(double d);
 	static Value Obj(std::shared_ptr<Object>obj);
+	static Value PyObject(py::object obj);
+
 	bool as_bool() const;
 	double as_number() const;
 	bool as_nil() const;
+	py::object as_py_object() const;
 	std::shared_ptr<Object> as_obj() const;
 	static std::shared_ptr<ObjString> as_string(const Value& value);
 	static std::shared_ptr<ObjFunction> as_function(const Value& value);
 	static NativeFn as_native(const Value& v);
+	//static std::shared_ptr<ObjPython> as_python(const Value& value);
 
 	std::shared_ptr<Object> transfer_obj();
 	//ObjString* as_string() const;
@@ -69,5 +77,6 @@ public:
 	static bool is_string(const Value& v);
 	static bool is_function(const Value& v);
 	static bool is_native(const Value& v);
+	static bool is_py_obj(const Value& v);
 
 };

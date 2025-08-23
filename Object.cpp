@@ -122,3 +122,28 @@ bool ObjNative::compare(const Object* other) const {
  std::shared_ptr<Object> ObjNative::clone() const  {
 	return std::make_shared<ObjNative>(*this);
 }
+
+ ObjPython::ObjPython(py::object obj) : Object(ObjType::OBJ_PYTHON), py_object(obj) {}
+ ObjPython::ObjPython(const ObjPython& other) : Object(ObjType::OBJ_PYTHON), py_object(other.py_object) {}
+ void ObjPython::print() const {
+	 try {
+
+		 std::cout << "Loaded dataset with shape: "
+			 << std::string(py::str(this->py_object.attr("shape")))
+			 << std::endl;
+	 }
+	 catch (const py::error_already_set& e) {
+		 std::cerr << "Python error: " << e.what() << std::endl;
+		 exit(404);
+	 }
+	 catch (const std::exception& e) {
+		 std::cerr << "C++ error: " << e.what() << std::endl;
+		 exit(404);
+	 }
+ }
+ bool ObjPython::compare(const Object* other) const {
+	 if (other->obj_type() != ObjType::OBJ_PYTHON) return false;
+	 const ObjPython* o = dynamic_cast<const ObjPython*>(other);
+	 return o && py_object.is(o->py_object);
+ }
+ std::shared_ptr<Object> ObjPython::clone() const { return std::make_shared<ObjPython>(*this); }

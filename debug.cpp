@@ -94,8 +94,17 @@ int Debug::constant_instruction(Chunk* chunk, std::string name,  int offset) {
 		else if constexpr (std::is_same_v< T, std::shared_ptr<Object>>) {
 			//std::cout << "object";
 		}
-		else {
+		else if constexpr(std::is_same_v<T, std::shared_ptr<ObjPython>>) {
+			std::cout << arg->print();
+		}
+		else if constexpr(std::is_same_v<T, bool>) {
 			std::cout << arg;
+		}
+		else if constexpr (std::is_same_v<T, double>) {
+			std::cout << arg;
+		}
+		else {
+			std::cout << "invalid object";
 		}
 		}, (chunk->values[constant]).data);
 	std::cout <<  std::endl;

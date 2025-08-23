@@ -11,6 +11,8 @@
 #include"Object.h"
 #include"ParseRule.h"
 #include <ctime>
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
 
 CallFrame::CallFrame() : slot_base(0) {};
 CallFrame::CallFrame(std::shared_ptr<ObjFunction> func,
@@ -19,10 +21,12 @@ CallFrame::CallFrame(std::shared_ptr<ObjFunction> func,
 	: function(std::move(func)), ip(ip_iter), slot_base(slot_base) {
 }
 
-VM::VM() : frames() , frame_count(0) {
+VM::VM() : frames() , frame_count(0) , guard(){
 	//ip = (this->chunk->code).begin();
 	strings = std::make_shared<StringInterner>();
 	globals = std::make_shared<StringInterner>();
+	pandas = py::module_::import("pandas");
+	sklearn = py::module_::import("sklearn.ensemble");
 };
 
 
@@ -104,6 +108,9 @@ InterpretResult VM::run() {
 				else if constexpr (std::is_same_v< T, std::shared_ptr<Object>>) {
 
 					arg->print();
+				}
+				else if constexpr (std::is_same_v< T,py::object>) {
+					std::cout << "python obj";
 				}
 				else {
 					std::cout << arg;
@@ -373,7 +380,12 @@ InterpretResult VM::intepret(const std::string& source) {
 	define_native("clock", [this](int argc, int idx) {
 		return this->clock_native(argc, idx);
 		});
-
+	define_native("load", [this](int argc, int idx) {
+		return this->load_native(argc, idx);
+		});
+	define_native("clean", [this](int argc, int idx) {
+		return this->clean_native(argc, idx);
+		});
 	Compiler compiler(source , this->strings);
 
 
@@ -549,20 +561,61 @@ Value VM::clock_native(int argCount, int stackIndex) {
 	return Value::Number(seconds);
 }
 
-//Value VM::load_native(int argCount, int stack_index) {
-//    if (argCount != 1) {
-//        std::cerr << "load() takes exactly one argument.\n";
-//        return Value::Nil();
-//    }
-//
-//    Value arg = stack[stack_index]; // first arg is at this index
-//    if (!arg.is_obj() || arg.as_obj()->type() != ObjType::STRING) {
-//        std::cerr << "Argument to load() must be a string.\n";
-//        return Value::Nil();
-//    }
-//
-//    std::shared_ptr<ObjString> filename = std::static_pointer_cast<ObjString>(arg.as_obj());
-//    std::cout << "Would load file: " << filename->str() << "\n";
-//
-//    return Value::Nil(); // or whatever logic you want
-//}
+
+
+Value VM::load_native(int argCount, int stackIndex) {
+    if (argCount != 1) {
+        runtimeError("load() takes exactly one argument.");
+        return Value::Nil();
+    }
+    Value& arg = stack[stackIndex];
+    if (!Value::is_string(arg)) {
+        runtimeError("load() argument must be a string.");
+        return Value::Nil();
+    }
+    try {
+
+        std::shared_ptr<ObjString> filename = Value::as_string(arg);
+        py::object df = pandas.attr("read_csv")(filename->get_string());
+        return Value::PyObject(df);
+    } catch (const py::error_already_set& e) {
+		std::string error = std::string("Python error in load(): ") + e.what();
+
+        runtimeError(error);
+        return Value::Nil();
+    }
+}
+Value VM::clean_native(int arg_count, int stack_index) {
+	if (arg_count != 2) {
+		runtimeError("clean() takes exactly two arguments: method (string) and data (DataFrame).");
+		return Value::Nil();
+	}
+	Value& method_val = stack[stack_index];
+	Value& data_val = stack[stack_index + 1];
+	if (!Value::is_string(method_val)) {
+		runtimeError("clean() first argument must be a string (method).");
+		return Value::Nil();
+	}
+	if (!Value::is_py_obj(data_val)) {
+		runtimeError("clean() second argument must be a DataFrame (Python object).");
+		return Value::Nil();
+	}
+	try {
+		std::shared_ptr<ObjString> method = Value::as_string(method_val);
+		py::object df = data_val.as_py_object();
+		if (method->get_string() == "remove-nulls") {
+			df = df.attr("dropna")();
+		}
+		else {
+			std::string message = std::string("Unsupported clean method") + method->get_string().c_str();
+			runtimeError(message );
+			return Value::Nil();
+		}
+		return Value::PyObject(df);
+	}
+	catch (const py::error_already_set& e) {
+		std::string message = std::string("Python error in clean()") +e.what();
+		runtimeError(message);
+		return Value::Nil();
+	}
+}

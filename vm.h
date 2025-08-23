@@ -12,9 +12,13 @@
 #include<utility>
 #include<unordered_map>
 #include<array>
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
 #include<string>
 #include"StringInterner.h"
 #define FRAMES_MAX 64
+
+namespace py = pybind11;
 
 class StringInterner;
 class Chunk;
@@ -34,9 +38,10 @@ public:
 	//what is the constructor for this?
 };
 class VM
-{
-	
-	
+{	
+	py::module_ pandas;
+	py::module_ sklearn;
+	py::scoped_interpreter guard;
 	int frame_count;//current height of the CallFrame stack; == frame.sixe()
 	//comment out chunk and its ip
 	// if we are commenting its ip then should there be an ip in the ObjFunction?
@@ -64,9 +69,9 @@ public:
 	bool call(std::shared_ptr<ObjFunction> function, int arg_count);
 	void define_native(const std::string& name, NativeFn function);
 	Value clock_native(int arg_count, int args);
-	//Value load_native(int argCount, int stack_index);
+	Value load_native(int arg_count, int stack_index);
+	Value clean_native(int arg_count, int stack_index);
 
-private:	
 
 };
 
