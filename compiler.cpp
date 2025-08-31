@@ -325,6 +325,15 @@ void Compiler::statement() {
 	if (match(token_type::TOKEN_PRINT)){
 		print_statement();
 	}
+	if (match(TOKEN_SLIT)) {
+		parse_slit_statement();
+	}
+	else if (match(TOKEN_LOAD)) {
+		parse_load_statement();
+	}
+	else if (match(TOKEN_CLEAN)) {
+		parse_clean_statement();
+	}
 	else if (match(token_type::TOKEN_LEFT_BRACE)) {
 		begin_scope();
 		block();
@@ -707,4 +716,39 @@ void Compiler::return_statement(){
 		emit_byte(OpCode::OP_RETURN);
 
 	}
+}
+// New function in Compiler.cpp
+void Compiler::parse_clean_statement() {
+	
+	expression(); 	
+	this->parser->consume(TOKEN_IN, "Expect 'in' after clean arguments.");
+	//uint8_t var_name = parse_variable("Expect variable name after 'in'.");
+	//Token var_name = parser->current;
+	named_variable(parser->current, false);
+	this->parser->consume(TOKEN_SEMICOLON, "Expect ';' at the end of the statement.");
+	emit_byte(OP_CLEAN);
+	
+}
+
+void Compiler::parse_load_statement() {
+	expression();
+	this->parser->consume(TOKEN_TO, "Expect 'to' after clean arguments.");
+	uint8_t global = parse_variable("Expect variable name after 'in'.");
+	define_variable(global);
+	this->parser->consume(TOKEN_SEMICOLON, "Expect ';' at the end of the statement.");
+	
+	emit_byte(OP_LOAD);
+}
+
+void Compiler::parse_slit_statement() {
+	uint8_t slit_index = parse_variable("Expect variable name after 'in'.");
+	expression();
+	this->parser->consume(TOKEN_TO, "Expect 'to' after clean arguments.");
+	uint8_t train_var = parse_variable("Expect first variable name after 'to'.");
+	this->parser->consume(TOKEN_COMMA, "Expect ',' between variable names.");
+	uint8_t test_var = parse_variable("Expect second variable name after ','.");
+	this->parser->consume(TOKEN_SEMICOLON, "Expect ';' at the end of the statement.");
+	define_variable(train_var);
+	define_variable(test_var);
+	emit_byte(OP_SPLIT);
 }

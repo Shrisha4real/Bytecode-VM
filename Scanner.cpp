@@ -154,14 +154,42 @@ Token Scanner::identifier() {
 token_type Scanner::identifier_type() {
     switch (this->start[0]) {
     case 'a': return this->check_keyword(1, 2, "nd", TOKEN_AND);
-    case 'c': return this->check_keyword(1, 4, "lass", TOKEN_CLASS);
+    case 'c': 
+    {
+        if ((this->current - this->start > 1) && this->start[1]=='l') {
+
+            switch (this->start[2]) {
+            case 'a':  return this->check_keyword(2, 3, "ass", TOKEN_CLASS);
+            case 'e': return this->check_keyword(2, 3, "ean", TOKEN_CLEAN);
+
+           }
+        }
+    }
     case 'e': return this->check_keyword(1, 3, "lse", TOKEN_ELSE);
-    case 'i': return this->check_keyword(1, 1, "f", TOKEN_IF);
+    case 'i':
+    {
+        if (this->current - this->start > 1) {
+            switch (this->start[1]) {
+            case 'f': return this->check_keyword(1, 1, "f", TOKEN_IF);
+            case 'n':return this->check_keyword(1, 1, "n", TOKEN_IN);
+            }
+        }
+    }
+    case 'l': return this->check_keyword(1, 3, "oad", TOKEN_LOAD);
     case 'n': return this->check_keyword(1, 2, "il", TOKEN_NIL);
     case 'o': return this->check_keyword(1, 1, "r", TOKEN_OR);
     case 'p': return this->check_keyword(1, 4, "rint", TOKEN_PRINT);
     case 'r': return this->check_keyword(1, 5, "eturn", TOKEN_RETURN);
-    case 's': return this->check_keyword(1, 4, "uper", TOKEN_SUPER);
+    case 's': 
+    {
+        if (this->current - this->start > 1) {
+            switch(this->start[1]) {
+            case 'u': return this->check_keyword(1, 4, "uper", TOKEN_SUPER);
+            case 'l': return this->check_keyword(1, 3, "lit", TOKEN_SLIT);
+            }
+        }
+       
+    }
     case 'v': return this->check_keyword(1, 2, "ar", TOKEN_VAR);
     case 'w': return this->check_keyword(1, 4, "hile", TOKEN_WHILE);
     case 'f':
@@ -178,6 +206,7 @@ token_type Scanner::identifier_type() {
             switch (this->start[1]) {
             case 'h': return this->check_keyword(2, 2, "is", TOKEN_THIS);
             case 'r': return this->check_keyword(2, 2, "ue", TOKEN_TRUE);
+            case 'o': return this->check_keyword(1, 1, "o", TOKEN_TO);
             }
         }
         break;

@@ -130,6 +130,10 @@ public:
 	uint8_t argument_list();
 	void return_statement();
 
+	void parse_slit_statement();
+	void parse_load_statement();
+	void parse_clean_statement();
+
 private:
 	inline void debug_print_code();
 };

@@ -1,4 +1,1 @@
-
-var x = load("Iris.csv");
-x = clean("remove-nulls", x );
-print x;
+clean("remove-nulls") in x;
