@@ -310,6 +310,15 @@ InterpretResult VM::run() {
 			frame = &frames[frame_count-1];
 			break;
 		}
+		case OpCode::OP_LOAD: {
+			break;
+		}
+		case OpCode::OP_CLEAN: {
+			break;
+		}
+		case OpCode::OP_SPLIT: {
+			break;
+		}
 
 			
 		}
@@ -380,12 +389,12 @@ InterpretResult VM::intepret(const std::string& source) {
 	define_native("clock", [this](int argc, int idx) {
 		return this->clock_native(argc, idx);
 		});
-	define_native("load", [this](int argc, int idx) {
-		return this->load_native(argc, idx);
-		});
-	define_native("clean", [this](int argc, int idx) {
-		return this->clean_native(argc, idx);
-		});
+	//define_native("load", [this](int argc, int idx) {
+	//	return this->load_native(argc, idx);
+	//	});
+	//define_native("clean", [this](int argc, int idx) {
+	//	return this->clean_native(argc, idx);
+	//	});
 	Compiler compiler(source , this->strings);
 
 
