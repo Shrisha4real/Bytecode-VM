@@ -311,6 +311,12 @@ InterpretResult VM::run() {
 			break;
 		}
 		case OpCode::OP_LOAD: {
+			uint8_t arg_count = read_byte(frame);
+			int arg_start = static_cast<int>(stack.size()) - arg_count;
+			Value result = load_native(arg_count, arg_start);
+			stack.erase(stack.end() - arg_count, stack.end());
+			stack.push_back(std::move(result));
+			//Value result = pop();
 			break;
 		}
 		case OpCode::OP_CLEAN: {

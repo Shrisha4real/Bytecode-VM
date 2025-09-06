@@ -727,18 +727,19 @@ void Compiler::parse_clean_statement() {
 	named_variable(parser->current, false);
 	this->parser->consume(token_type::TOKEN_IDENTIFIER, "Expect declared variable");
 	this->parser->consume(TOKEN_SEMICOLON, "Expect ';' at the end of the statement.");
-	emit_byte(OP_CLEAN);
+	emit_bytes(OP_CLEAN , 2);
 	
 }
 
 void Compiler::parse_load_statement() {
 	expression();
+	emit_bytes(OP_LOAD, 1);
 	this->parser->consume(TOKEN_TO, "Expect 'to' after clean arguments.");
 	uint8_t global = parse_variable("Expect variable name after 'to'.");
 	define_variable(global);
 	this->parser->consume(TOKEN_SEMICOLON, "Expect ';' at the end of the statement.");
 	
-	emit_byte(OP_LOAD);
+	
 }
 
 void Compiler::parse_slit_statement() {
