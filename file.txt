@@ -1,3 +1,4 @@
 load("Iris.csv") to x;
-print x;
+clean("remove nulls") in x;
+print x; // prints the size of the dataframe
 

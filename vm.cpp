@@ -320,6 +320,11 @@ InterpretResult VM::run() {
 			break;
 		}
 		case OpCode::OP_CLEAN: {
+			uint8_t arg_count = read_byte(frame);
+			int arg_start = static_cast<int>(stack.size()) - arg_count;
+			Value result = clean_native(arg_count, arg_start);
+			stack.erase(stack.end() - arg_count, stack.end());
+			stack.push_back(std::move(result));
 			break;
 		}
 		case OpCode::OP_SPLIT: {
@@ -618,7 +623,7 @@ Value VM::clean_native(int arg_count, int stack_index) {
 	try {
 		std::shared_ptr<ObjString> method = Value::as_string(method_val);
 		py::object df = data_val.as_py_object();
-		if (method->get_string() == "remove-nulls") {
+		if (method->get_string() == "remove nulls") {
 			df = df.attr("dropna")();
 		}
 		else {
