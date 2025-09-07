@@ -743,14 +743,18 @@ void Compiler::parse_load_statement() {
 }
 
 void Compiler::parse_slit_statement() {
-	uint8_t slit_index = parse_variable("Expect variable name after 'in'.");
+	named_variable(parser->current, false);
+	this->parser->consume(token_type::TOKEN_IDENTIFIER, "Expect declared variable");
+
 	expression();
 	this->parser->consume(TOKEN_TO, "Expect 'to' after clean arguments.");
 	uint8_t train_var = parse_variable("Expect first variable name after 'to'.");
 	this->parser->consume(TOKEN_COMMA, "Expect ',' between variable names.");
 	uint8_t test_var = parse_variable("Expect second variable name after ','.");
+	
 	this->parser->consume(TOKEN_SEMICOLON, "Expect ';' at the end of the statement.");
+	emit_bytes(OP_SPLIT, 2);
 	define_variable(train_var);
 	define_variable(test_var);
-	emit_byte(OP_SPLIT);
+	
 }

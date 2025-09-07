@@ -16,6 +16,8 @@
 #include <pybind11/embed.h>
 #include<string>
 #include"StringInterner.h"
+
+
 #define FRAMES_MAX 64
 
 namespace py = pybind11;
@@ -71,7 +73,7 @@ public:
 	Value clock_native(int arg_count, int args);
 	Value load_native(int arg_count, int stack_index);
 	Value clean_native(int arg_count, int stack_index);
-
+	std::pair<Value, Value> split_method(int arg_count, int stack_index);
 
 };
 

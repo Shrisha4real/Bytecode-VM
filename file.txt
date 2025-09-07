@@ -1,4 +1,6 @@
 load("Iris.csv") to x;
 clean("remove nulls") in x;
+slit x "80-20" to train, test;
 print x; // prints the size of the dataframe
-
+print test;
+print train;

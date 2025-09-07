@@ -328,6 +328,19 @@ InterpretResult VM::run() {
 			break;
 		}
 		case OpCode::OP_SPLIT: {
+			// Unlike clean, split needs: ratio + dataframe
+			uint8_t arg_count = read_byte(frame);
+			int arg_start = static_cast<int>(stack.size()) - arg_count;
+
+			// Call helper
+			auto result_pair = split_method(arg_count, arg_start);
+
+			// Remove arguments
+			stack.erase(stack.end() - arg_count, stack.end());
+
+			// Push back both train and test DataFrames
+			stack.push_back(std::move(result_pair.first));   // train
+			stack.push_back(std::move(result_pair.second));  // test
 			break;
 		}
 
@@ -637,5 +650,64 @@ Value VM::clean_native(int arg_count, int stack_index) {
 		std::string message = std::string("Python error in clean()") +e.what();
 		runtimeError(message);
 		return Value::Nil();
+	}
+}
+std::pair<Value, Value> VM::split_method(int arg_count, int stack_index) {
+	if (arg_count != 2) {
+		runtimeError("split() takes exactly two arguments: ratio (string) and data (DataFrame).");
+		return { Value::Nil(), Value::Nil() };
+	}
+
+	Value& data_val = stack[stack_index];
+	Value& ratio_val = stack[stack_index + 1];
+
+	if (!Value::is_string(ratio_val)) {
+		runtimeError("split() first argument must be a string (e.g. \"80-20\").");
+		return { Value::Nil(), Value::Nil() };
+	}
+	if (!Value::is_py_obj(data_val)) {
+		runtimeError("split() second argument must be a DataFrame (Python object).");
+		return { Value::Nil(), Value::Nil() };
+	}
+
+	try {
+		// Extract ratio string
+		std::shared_ptr<ObjString> ratio_str = Value::as_string(ratio_val);
+		std::string ratio = ratio_str->get_string();
+
+		// Parse "80-20"
+		size_t dash_pos = ratio.find('-');
+		if (dash_pos == std::string::npos) {
+			runtimeError("split() ratio format must be like \"80-20\".");
+			return { Value::Nil(), Value::Nil() };
+		}
+
+		int train_percent = std::stoi(ratio.substr(0, dash_pos));
+		int test_percent = std::stoi(ratio.substr(dash_pos + 1));
+
+		if (train_percent + test_percent != 100) {
+			runtimeError("split() percentages must add up to 100.");
+			return { Value::Nil(), Value::Nil() };
+		}
+
+		// Access DataFrame
+		py::object df = data_val.as_py_object();
+
+		// Convert train % to fraction
+		double frac = train_percent / 100.0;
+
+		// Use pandas train_test_split equivalent
+		py::module_ sklearn = py::module_::import("sklearn.model_selection");
+		py::tuple result = sklearn.attr("train_test_split")(df, py::arg("test_size") = 1.0 - frac);
+
+		py::object train_df = result[0];
+		py::object test_df = result[1];
+
+		return { Value::PyObject(train_df), Value::PyObject(test_df) };
+	}
+	catch (const py::error_already_set& e) {
+		std::string message = std::string("Python error in split(): ") + e.what();
+		runtimeError(message);
+		return { Value::Nil(), Value::Nil() };
 	}
 }
