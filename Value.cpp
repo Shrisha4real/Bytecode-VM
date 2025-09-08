@@ -1,0 +1,199 @@
+#include "Value.h"
+#include "Object.h"
+#include"vm.h"
+
+Value:: Value()
+    : type(ValueType::NIL), data(std::monostate{}) {
+}
+Value::Value(ValueType t, std::variant<std::monostate, bool, double, std::shared_ptr<Object>, py::object> d)
+    : type(t), data(std::move(d)) {
+}
+
+
+Value Value::clone() const {
+    if (std::holds_alternative<std::shared_ptr<Object>>(data)) {
+        //std::cout << "Value holds object data\n";
+        std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(data);
+
+        if (!obj) {
+            std::cerr << "[Warning] clone() called on Value containing null Object pointer.\n";
+            return Value(type, std::shared_ptr<Object>(nullptr));
+        }
+
+        return Value(type, std::shared_ptr<Object>(obj->clone()));
+    }
+    return Value(type, data);
+}
+
+Value Value::Nil() {
+    return { ValueType::NIL, std::monostate{} };
+}
+
+Value Value::Number(double n) {
+    return { ValueType::NUMBER, n };
+}
+
+Value Value::Bool(bool b) {
+    return { ValueType::BOOL , b };
+}
+
+Value Value::Obj(std::shared_ptr<Object>obj) {
+    return{ ValueType::OBJ , std::move(obj)};
+}
+Value Value::PyObject(py::object obj) {
+    return{ ValueType::PY_OBJ, obj };
+}
+
+
+double Value::as_number() const {
+    return std::get<double>(this->data);
+}
+
+bool Value::as_nil() const {
+    return std::holds_alternative<std::monostate>(data);
+}
+
+bool Value::as_bool() const {
+    return std::get<bool>(this->data);
+}
+
+std::shared_ptr<Object> Value::as_obj() const {
+    return std::get<std::shared_ptr<Object>>(this->data);
+}
+
+py::object Value::as_py_object()const {
+    return std::get<py::object>(this->data);
+}
+std::shared_ptr<ObjString> Value::as_string(const Value& v) {
+    if (!std::holds_alternative<std::shared_ptr<Object>>(v.data)) return nullptr;
+
+    std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(v.data);
+
+    std::shared_ptr<ObjString> string = std::dynamic_pointer_cast<ObjString>(obj);
+    if (!string)std::cout << "not a string object\n";
+
+    return string;
+}
+std::shared_ptr<ObjFunction> Value::as_function(const Value& v) {
+    if (!std::holds_alternative<std::shared_ptr<Object>>(v.data)) return nullptr;
+
+    std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(v.data);
+
+    std::shared_ptr<ObjFunction> function = std::dynamic_pointer_cast<ObjFunction>(obj);
+    if (!function)std::cout << "not a function object\n";
+    return function;
+}
+
+NativeFn Value::as_native(const Value& v) {
+    if (!std::holds_alternative<std::shared_ptr<Object>>(v.data)) return nullptr;
+
+    std::shared_ptr<Object> obj = std::get<std::shared_ptr<Object>>(v.data);
+
+    std::shared_ptr<ObjNative> native_obj = std::dynamic_pointer_cast<ObjNative>(obj);
+    if (!native_obj) return nullptr;
+
+    return native_obj->function;
+}
+
+
+void Value::set(Value& other) {
+    type = other.type;
+    Value temp = other.clone();
+    data = std::move(temp.data);
+
+}
+
+
+std::shared_ptr<Object> Value::transfer_obj() {
+    return std::exchange(std::get<std::shared_ptr<Object>>(data), nullptr);
+}
+
+//ObjString* Value::as_string() const {
+//    const ObjString* other_v = dynamic_cast<ObjString*>(v.as_obj());
+//
+//}
+
+bool Value::is_bool(const Value& v) {
+    return (v.type == ValueType::BOOL);
+    //return std::get<bool>(v.data);
+    
+}
+bool Value::is_number(const Value& v) {
+    return (v.type == ValueType::NUMBER);
+}
+bool Value::is_nil(const Value& v) {
+    return (v.type == ValueType::NIL);
+}
+bool Value::is_obj(const Value& v) {
+    return (v.type == ValueType::OBJ);
+}
+bool Value::is_string(const Value& v) {
+    if (std::holds_alternative<std::shared_ptr<Object>>(v.data)) {
+        return v.as_obj()->obj_type() == ObjType::OBJ_STRING;
+    }
+    return false;
+
+  /* const ObjString* other_v = dynamic_cast<ObjString*>(v.as_obj());
+   if (!other_v) return false;
+   return true;*/
+}
+bool Value::is_function(const Value& v) {
+    if (std::holds_alternative<std::shared_ptr<Object>>(v.data)) {
+        return v.as_obj()->obj_type() == ObjType::OBJ_FUNCTION;
+    }
+    return false;
+}
+bool Value::is_native(const Value& v) {
+    if (std::holds_alternative<std::shared_ptr<Object>>(v.data)) {
+        return v.as_obj()->obj_type() == ObjType::OBJ_NATIVE;
+    }
+    return false;
+}
+bool Value::is_py_obj(const Value& v) {
+    
+    return (v.type == ValueType::PY_OBJ);
+}
+bool Value::valuesEqual(Value& a, Value& b) {
+    if (a.type != b.type) return false;
+    switch (a.type) {
+    case ValueType::BOOL:   return a.as_bool() == b.as_bool();
+    case ValueType::NIL:    return true;
+    case ValueType::NUMBER: return a.as_number() == b.as_number();
+    case ValueType::OBJ: {
+        //FIXME  string interning should work
+        return a.as_obj() == b.as_obj();
+        
+        //return ob1->compare(ob2);
+         
+    }
+    default: return false; 
+    }
+    std::cerr << "shouldnt be reaching end of valEqual\n";
+    return false;
+}
+
+void Value::print_value(const Value& value) {
+    std::visit([](const auto& arg) {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, std::monostate>) {
+            std::cout << "nil";
+        }
+        else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
+            
+            arg->print();  
+        }
+        else if constexpr (std::is_same_v<T,bool >) {
+            std::cout << arg;
+        }
+        else if constexpr (std::is_same_v<T, double >) {
+             std::cout << arg;
+        }
+        else if constexpr (std::is_same_v<T,py::object >) {
+            std::cout << "Loaded dataset with shape: "
+                << std::string(py::str(arg.attr("shape")))
+                << std::endl;
+        }
+        }, value.data);
+    std::cout << std::endl;
+}
+
