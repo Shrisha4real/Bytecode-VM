@@ -40,7 +40,7 @@ target_link_libraries(BytecodeVM PRIVATE pybind11::embed)
 
 # Optionally: set output dir
 set_target_properties(BytecodeVM PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 add_custom_target(build_and_run
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} 

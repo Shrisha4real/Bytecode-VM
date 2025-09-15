@@ -73,183 +73,183 @@ CMakeFiles/BytecodeVM.dir/main.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/main.cpp.o: /home/shrisha/projects/BytecodeVM/main.cpp
 CMakeFiles/BytecodeVM.dir/main.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/BytecodeVM.dir/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/main.cpp.o -MF CMakeFiles/BytecodeVM.dir/main.cpp.o.d -o CMakeFiles/BytecodeVM.dir/main.cpp.o -c /home/shrisha/projects/BytecodeVM/main.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/main.cpp.o -MF CMakeFiles/BytecodeVM.dir/main.cpp.o.d -o CMakeFiles/BytecodeVM.dir/main.cpp.o -c /home/shrisha/projects/BytecodeVM/main.cpp
 
 CMakeFiles/BytecodeVM.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/main.cpp > CMakeFiles/BytecodeVM.dir/main.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/main.cpp > CMakeFiles/BytecodeVM.dir/main.cpp.i
 
 CMakeFiles/BytecodeVM.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/main.cpp -o CMakeFiles/BytecodeVM.dir/main.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/main.cpp -o CMakeFiles/BytecodeVM.dir/main.cpp.s
 
 CMakeFiles/BytecodeVM.dir/Object.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/Object.cpp.o: /home/shrisha/projects/BytecodeVM/Object.cpp
 CMakeFiles/BytecodeVM.dir/Object.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/BytecodeVM.dir/Object.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Object.cpp.o -MF CMakeFiles/BytecodeVM.dir/Object.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Object.cpp.o -c /home/shrisha/projects/BytecodeVM/Object.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Object.cpp.o -MF CMakeFiles/BytecodeVM.dir/Object.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Object.cpp.o -c /home/shrisha/projects/BytecodeVM/Object.cpp
 
 CMakeFiles/BytecodeVM.dir/Object.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/Object.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Object.cpp > CMakeFiles/BytecodeVM.dir/Object.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Object.cpp > CMakeFiles/BytecodeVM.dir/Object.cpp.i
 
 CMakeFiles/BytecodeVM.dir/Object.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/Object.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Object.cpp -o CMakeFiles/BytecodeVM.dir/Object.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Object.cpp -o CMakeFiles/BytecodeVM.dir/Object.cpp.s
 
 CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o: /home/shrisha/projects/BytecodeVM/ParseRule.cpp
 CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o -MF CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o.d -o CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o -c /home/shrisha/projects/BytecodeVM/ParseRule.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o -MF CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o.d -o CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o -c /home/shrisha/projects/BytecodeVM/ParseRule.cpp
 
 CMakeFiles/BytecodeVM.dir/ParseRule.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/ParseRule.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/ParseRule.cpp > CMakeFiles/BytecodeVM.dir/ParseRule.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/ParseRule.cpp > CMakeFiles/BytecodeVM.dir/ParseRule.cpp.i
 
 CMakeFiles/BytecodeVM.dir/ParseRule.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/ParseRule.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/ParseRule.cpp -o CMakeFiles/BytecodeVM.dir/ParseRule.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/ParseRule.cpp -o CMakeFiles/BytecodeVM.dir/ParseRule.cpp.s
 
 CMakeFiles/BytecodeVM.dir/Parser.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/Parser.cpp.o: /home/shrisha/projects/BytecodeVM/Parser.cpp
 CMakeFiles/BytecodeVM.dir/Parser.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/BytecodeVM.dir/Parser.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Parser.cpp.o -MF CMakeFiles/BytecodeVM.dir/Parser.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Parser.cpp.o -c /home/shrisha/projects/BytecodeVM/Parser.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Parser.cpp.o -MF CMakeFiles/BytecodeVM.dir/Parser.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Parser.cpp.o -c /home/shrisha/projects/BytecodeVM/Parser.cpp
 
 CMakeFiles/BytecodeVM.dir/Parser.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/Parser.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Parser.cpp > CMakeFiles/BytecodeVM.dir/Parser.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Parser.cpp > CMakeFiles/BytecodeVM.dir/Parser.cpp.i
 
 CMakeFiles/BytecodeVM.dir/Parser.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/Parser.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Parser.cpp -o CMakeFiles/BytecodeVM.dir/Parser.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Parser.cpp -o CMakeFiles/BytecodeVM.dir/Parser.cpp.s
 
 CMakeFiles/BytecodeVM.dir/Scanner.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/Scanner.cpp.o: /home/shrisha/projects/BytecodeVM/Scanner.cpp
 CMakeFiles/BytecodeVM.dir/Scanner.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/BytecodeVM.dir/Scanner.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Scanner.cpp.o -MF CMakeFiles/BytecodeVM.dir/Scanner.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Scanner.cpp.o -c /home/shrisha/projects/BytecodeVM/Scanner.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Scanner.cpp.o -MF CMakeFiles/BytecodeVM.dir/Scanner.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Scanner.cpp.o -c /home/shrisha/projects/BytecodeVM/Scanner.cpp
 
 CMakeFiles/BytecodeVM.dir/Scanner.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/Scanner.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Scanner.cpp > CMakeFiles/BytecodeVM.dir/Scanner.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Scanner.cpp > CMakeFiles/BytecodeVM.dir/Scanner.cpp.i
 
 CMakeFiles/BytecodeVM.dir/Scanner.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/Scanner.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Scanner.cpp -o CMakeFiles/BytecodeVM.dir/Scanner.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Scanner.cpp -o CMakeFiles/BytecodeVM.dir/Scanner.cpp.s
 
 CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o: /home/shrisha/projects/BytecodeVM/StringInterner.cpp
 CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o -MF CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o.d -o CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o -c /home/shrisha/projects/BytecodeVM/StringInterner.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o -MF CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o.d -o CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o -c /home/shrisha/projects/BytecodeVM/StringInterner.cpp
 
 CMakeFiles/BytecodeVM.dir/StringInterner.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/StringInterner.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/StringInterner.cpp > CMakeFiles/BytecodeVM.dir/StringInterner.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/StringInterner.cpp > CMakeFiles/BytecodeVM.dir/StringInterner.cpp.i
 
 CMakeFiles/BytecodeVM.dir/StringInterner.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/StringInterner.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/StringInterner.cpp -o CMakeFiles/BytecodeVM.dir/StringInterner.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/StringInterner.cpp -o CMakeFiles/BytecodeVM.dir/StringInterner.cpp.s
 
 CMakeFiles/BytecodeVM.dir/Table.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/Table.cpp.o: /home/shrisha/projects/BytecodeVM/Table.cpp
 CMakeFiles/BytecodeVM.dir/Table.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/BytecodeVM.dir/Table.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Table.cpp.o -MF CMakeFiles/BytecodeVM.dir/Table.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Table.cpp.o -c /home/shrisha/projects/BytecodeVM/Table.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Table.cpp.o -MF CMakeFiles/BytecodeVM.dir/Table.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Table.cpp.o -c /home/shrisha/projects/BytecodeVM/Table.cpp
 
 CMakeFiles/BytecodeVM.dir/Table.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/Table.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Table.cpp > CMakeFiles/BytecodeVM.dir/Table.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Table.cpp > CMakeFiles/BytecodeVM.dir/Table.cpp.i
 
 CMakeFiles/BytecodeVM.dir/Table.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/Table.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Table.cpp -o CMakeFiles/BytecodeVM.dir/Table.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Table.cpp -o CMakeFiles/BytecodeVM.dir/Table.cpp.s
 
 CMakeFiles/BytecodeVM.dir/Token.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/Token.cpp.o: /home/shrisha/projects/BytecodeVM/Token.cpp
 CMakeFiles/BytecodeVM.dir/Token.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/BytecodeVM.dir/Token.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Token.cpp.o -MF CMakeFiles/BytecodeVM.dir/Token.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Token.cpp.o -c /home/shrisha/projects/BytecodeVM/Token.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Token.cpp.o -MF CMakeFiles/BytecodeVM.dir/Token.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Token.cpp.o -c /home/shrisha/projects/BytecodeVM/Token.cpp
 
 CMakeFiles/BytecodeVM.dir/Token.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/Token.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Token.cpp > CMakeFiles/BytecodeVM.dir/Token.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Token.cpp > CMakeFiles/BytecodeVM.dir/Token.cpp.i
 
 CMakeFiles/BytecodeVM.dir/Token.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/Token.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Token.cpp -o CMakeFiles/BytecodeVM.dir/Token.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Token.cpp -o CMakeFiles/BytecodeVM.dir/Token.cpp.s
 
 CMakeFiles/BytecodeVM.dir/Value.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/Value.cpp.o: /home/shrisha/projects/BytecodeVM/Value.cpp
 CMakeFiles/BytecodeVM.dir/Value.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/BytecodeVM.dir/Value.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Value.cpp.o -MF CMakeFiles/BytecodeVM.dir/Value.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Value.cpp.o -c /home/shrisha/projects/BytecodeVM/Value.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/Value.cpp.o -MF CMakeFiles/BytecodeVM.dir/Value.cpp.o.d -o CMakeFiles/BytecodeVM.dir/Value.cpp.o -c /home/shrisha/projects/BytecodeVM/Value.cpp
 
 CMakeFiles/BytecodeVM.dir/Value.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/Value.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Value.cpp > CMakeFiles/BytecodeVM.dir/Value.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/Value.cpp > CMakeFiles/BytecodeVM.dir/Value.cpp.i
 
 CMakeFiles/BytecodeVM.dir/Value.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/Value.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Value.cpp -o CMakeFiles/BytecodeVM.dir/Value.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/Value.cpp -o CMakeFiles/BytecodeVM.dir/Value.cpp.s
 
 CMakeFiles/BytecodeVM.dir/chunk.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/chunk.cpp.o: /home/shrisha/projects/BytecodeVM/chunk.cpp
 CMakeFiles/BytecodeVM.dir/chunk.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/BytecodeVM.dir/chunk.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/chunk.cpp.o -MF CMakeFiles/BytecodeVM.dir/chunk.cpp.o.d -o CMakeFiles/BytecodeVM.dir/chunk.cpp.o -c /home/shrisha/projects/BytecodeVM/chunk.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/chunk.cpp.o -MF CMakeFiles/BytecodeVM.dir/chunk.cpp.o.d -o CMakeFiles/BytecodeVM.dir/chunk.cpp.o -c /home/shrisha/projects/BytecodeVM/chunk.cpp
 
 CMakeFiles/BytecodeVM.dir/chunk.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/chunk.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/chunk.cpp > CMakeFiles/BytecodeVM.dir/chunk.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/chunk.cpp > CMakeFiles/BytecodeVM.dir/chunk.cpp.i
 
 CMakeFiles/BytecodeVM.dir/chunk.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/chunk.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/chunk.cpp -o CMakeFiles/BytecodeVM.dir/chunk.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/chunk.cpp -o CMakeFiles/BytecodeVM.dir/chunk.cpp.s
 
 CMakeFiles/BytecodeVM.dir/compiler.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/compiler.cpp.o: /home/shrisha/projects/BytecodeVM/compiler.cpp
 CMakeFiles/BytecodeVM.dir/compiler.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/BytecodeVM.dir/compiler.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/compiler.cpp.o -MF CMakeFiles/BytecodeVM.dir/compiler.cpp.o.d -o CMakeFiles/BytecodeVM.dir/compiler.cpp.o -c /home/shrisha/projects/BytecodeVM/compiler.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/compiler.cpp.o -MF CMakeFiles/BytecodeVM.dir/compiler.cpp.o.d -o CMakeFiles/BytecodeVM.dir/compiler.cpp.o -c /home/shrisha/projects/BytecodeVM/compiler.cpp
 
 CMakeFiles/BytecodeVM.dir/compiler.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/compiler.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/compiler.cpp > CMakeFiles/BytecodeVM.dir/compiler.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/compiler.cpp > CMakeFiles/BytecodeVM.dir/compiler.cpp.i
 
 CMakeFiles/BytecodeVM.dir/compiler.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/compiler.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/compiler.cpp -o CMakeFiles/BytecodeVM.dir/compiler.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/compiler.cpp -o CMakeFiles/BytecodeVM.dir/compiler.cpp.s
 
 CMakeFiles/BytecodeVM.dir/debug.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/debug.cpp.o: /home/shrisha/projects/BytecodeVM/debug.cpp
 CMakeFiles/BytecodeVM.dir/debug.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/BytecodeVM.dir/debug.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/debug.cpp.o -MF CMakeFiles/BytecodeVM.dir/debug.cpp.o.d -o CMakeFiles/BytecodeVM.dir/debug.cpp.o -c /home/shrisha/projects/BytecodeVM/debug.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/debug.cpp.o -MF CMakeFiles/BytecodeVM.dir/debug.cpp.o.d -o CMakeFiles/BytecodeVM.dir/debug.cpp.o -c /home/shrisha/projects/BytecodeVM/debug.cpp
 
 CMakeFiles/BytecodeVM.dir/debug.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/debug.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/debug.cpp > CMakeFiles/BytecodeVM.dir/debug.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/debug.cpp > CMakeFiles/BytecodeVM.dir/debug.cpp.i
 
 CMakeFiles/BytecodeVM.dir/debug.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/debug.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/debug.cpp -o CMakeFiles/BytecodeVM.dir/debug.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/debug.cpp -o CMakeFiles/BytecodeVM.dir/debug.cpp.s
 
 CMakeFiles/BytecodeVM.dir/vm.cpp.o: CMakeFiles/BytecodeVM.dir/flags.make
 CMakeFiles/BytecodeVM.dir/vm.cpp.o: /home/shrisha/projects/BytecodeVM/vm.cpp
 CMakeFiles/BytecodeVM.dir/vm.cpp.o: CMakeFiles/BytecodeVM.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/BytecodeVM.dir/vm.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/vm.cpp.o -MF CMakeFiles/BytecodeVM.dir/vm.cpp.o.d -o CMakeFiles/BytecodeVM.dir/vm.cpp.o -c /home/shrisha/projects/BytecodeVM/vm.cpp
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/BytecodeVM.dir/vm.cpp.o -MF CMakeFiles/BytecodeVM.dir/vm.cpp.o.d -o CMakeFiles/BytecodeVM.dir/vm.cpp.o -c /home/shrisha/projects/BytecodeVM/vm.cpp
 
 CMakeFiles/BytecodeVM.dir/vm.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/BytecodeVM.dir/vm.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/vm.cpp > CMakeFiles/BytecodeVM.dir/vm.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/shrisha/projects/BytecodeVM/vm.cpp > CMakeFiles/BytecodeVM.dir/vm.cpp.i
 
 CMakeFiles/BytecodeVM.dir/vm.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/BytecodeVM.dir/vm.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/vm.cpp -o CMakeFiles/BytecodeVM.dir/vm.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/shrisha/projects/BytecodeVM/vm.cpp -o CMakeFiles/BytecodeVM.dir/vm.cpp.s
 
 # Object files for target BytecodeVM
 BytecodeVM_OBJECTS = \
@@ -270,27 +270,27 @@ BytecodeVM_OBJECTS = \
 # External object files for target BytecodeVM
 BytecodeVM_EXTERNAL_OBJECTS =
 
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/main.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/Object.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/Parser.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/Scanner.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/Table.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/Token.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/Value.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/chunk.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/compiler.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/debug.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/vm.cpp.o
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/build.make
-bin/BytecodeVM: /usr/lib/x86_64-linux-gnu/libpython3.12.so
-bin/BytecodeVM: CMakeFiles/BytecodeVM.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX executable bin/BytecodeVM"
+BytecodeVM: CMakeFiles/BytecodeVM.dir/main.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/Object.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/Parser.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/Scanner.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/StringInterner.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/Table.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/Token.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/Value.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/chunk.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/compiler.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/debug.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/vm.cpp.o
+BytecodeVM: CMakeFiles/BytecodeVM.dir/build.make
+BytecodeVM: /usr/lib/x86_64-linux-gnu/libpython3.12.so
+BytecodeVM: CMakeFiles/BytecodeVM.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/shrisha/projects/BytecodeVM/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX executable BytecodeVM"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/BytecodeVM.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-CMakeFiles/BytecodeVM.dir/build: bin/BytecodeVM
+CMakeFiles/BytecodeVM.dir/build: BytecodeVM
 .PHONY : CMakeFiles/BytecodeVM.dir/build
 
 CMakeFiles/BytecodeVM.dir/clean:

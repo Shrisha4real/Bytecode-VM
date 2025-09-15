@@ -66,7 +66,7 @@ include CMakeFiles/build_and_run.dir/compiler_depend.make
 # Include the progress variables for this target.
 include CMakeFiles/build_and_run.dir/progress.make
 
-CMakeFiles/build_and_run: bin/BytecodeVM
+CMakeFiles/build_and_run: BytecodeVM
 	cd /home/shrisha/projects/BytecodeVM && /usr/bin/cmake --build /home/shrisha/projects/BytecodeVM/build
 	cd /home/shrisha/projects/BytecodeVM && /home/shrisha/projects/BytecodeVM/build/bin/BytecodeVM /home/shrisha/projects/BytecodeVM/file.txt
 

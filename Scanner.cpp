@@ -84,6 +84,7 @@ void Scanner::remove_white_spaces() {
             this->advance();
             break;
         case '/':
+          {  
             if (this->peek_next() == '/') {
                 while (peek() != '\n' && !this->is_at_end()) {
                     this->advance();
@@ -91,6 +92,7 @@ void Scanner::remove_white_spaces() {
             }
             else return;
             break;
+        }
         default: return;
 
         }
@@ -177,8 +179,16 @@ token_type Scanner::identifier_type() {
     }
     case 'l': return this->check_keyword(1, 3, "oad", TOKEN_LOAD);
     case 'n': return this->check_keyword(1, 2, "il", TOKEN_NIL);
-    case 'o': return this->check_keyword(1, 1, "r", TOKEN_OR);
-    case 'p': return this->check_keyword(1, 4, "rint", TOKEN_PRINT);
+    case 'o': 
+    {
+        if (this->current - this->start > 1) {
+            switch (this->start[1]) {
+            case 'r': return this->check_keyword(1, 1, "f", TOKEN_OR);
+            case 'n':return this->check_keyword(1, 1, "n", TOKEN_ON);
+            }
+        }
+    }
+       case 'p': return this->check_keyword(1, 4, "rint", TOKEN_PRINT);
     case 'r': return this->check_keyword(1, 5, "eturn", TOKEN_RETURN);
     case 's': 
     {
@@ -202,14 +212,21 @@ token_type Scanner::identifier_type() {
         }
         break;
     case 't':
-        if (this->current - this->start > 1) {
-            switch (this->start[1]) {
+    if (this->current - this->start > 1) {
+        switch (this->start[1]) {
             case 'h': return this->check_keyword(2, 2, "is", TOKEN_THIS);
-            case 'r': return this->check_keyword(2, 2, "ue", TOKEN_TRUE);
-            case 'o': return this->check_keyword(1, 1, "o", TOKEN_TO);
-            }
+            case 'r':
+                if (this->current - this->start == 4) {
+                    return this->check_keyword(2, 2, "ue", TOKEN_TRUE);
+                }
+                if (this->current - this->start == 5) {
+                    return this->check_keyword(2, 3, "ain", TOKEN_TRAIN);
+                }
+                break;
+            case 'o': return this->check_keyword(2, 0, "", TOKEN_TO);
         }
-        break;
+    }
+    break;
     }
 
     return TOKEN_IDENTIFIER;

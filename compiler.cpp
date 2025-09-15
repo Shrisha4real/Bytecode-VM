@@ -334,6 +334,9 @@ void Compiler::statement() {
 	else if (match(TOKEN_CLEAN)) {
 		parse_clean_statement();
 	}
+	else if(match(TOKEN_TRAIN)) {
+		parse_train_statement();
+	}
 	else if (match(token_type::TOKEN_LEFT_BRACE)) {
 		begin_scope();
 		block();
@@ -758,3 +761,41 @@ void Compiler::parse_slit_statement() {
 	define_variable(test_var);
 	
 }
+void Compiler::parse_train_statement() {
+    // 1. Consume model name
+    // consume_model(TOKEN_MODEL, "Expect model name after 'train'.");
+    // uint8_t model_var = identifier_constant(this->parser->previous); // e.g., "RandomForest"
+    this->parser->consume(TOKEN_IDENTIFIER, "Expect model name after 'train'.");
+    uint8_t model_var = identifier_constant(this->parser->previous); // e.g., "RandomForest"
+    // 2. Handle optional parameter inside ()
+    uint8_t param_var = 0;  // default = none
+    bool has_param = false;
+
+    if (match(TOKEN_LEFT_PAREN)) {
+        // compile the expression inside parentheses (e.g., 100)
+        expression();
+        has_param = true;
+        this->parser->consume(TOKEN_RIGHT_PAREN, "Expect ')' after model parameters.");
+    }
+
+    // 3. Expect 'on' keyword
+    this->parser->consume(TOKEN_ON, "Expect 'on' after model definition.");
+
+    // 4. Dataset variable
+    named_variable(parser->current, false);
+    this->parser->consume(token_type::TOKEN_IDENTIFIER, "Expect declared variable");
+    this->parser->consume(TOKEN_TO, "Expect 'to' before target model variable.");
+
+
+    uint8_t target_var = parse_variable("Expect variable name after 'to'.");
+    define_variable(target_var);
+    this->parser->consume(TOKEN_SEMICOLON, "Expect ';' after train statement.");
+    if (has_param) {
+        emit_bytes(OP_TRAIN, 3); // model + param + dataset
+    } else {
+        emit_bytes(OP_TRAIN, 2); // model + dataset
+    }
+
+    define_variable(target_var);
+}
+// bool consume_model(Token model , token_type type, const std::string message);

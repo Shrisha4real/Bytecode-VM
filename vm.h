@@ -21,7 +21,7 @@
 #define FRAMES_MAX 64
 
 namespace py = pybind11;
-
+// Keep this at file scope (or as a static member of VM).
 class StringInterner;
 class Chunk;
 class ObjString;
@@ -74,7 +74,8 @@ public:
 	Value load_native(int arg_count, int stack_index);
 	Value clean_native(int arg_count, int stack_index);
 	std::pair<Value, Value> split_method(int arg_count, int stack_index);
-
+	Value train_method(int arg_count, int stack_index);
+	py::object import_model_from_registry(const std::string& model_name);
 };
 
  

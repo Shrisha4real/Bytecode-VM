@@ -1,7 +1,9 @@
 load("~/projects/BytecodeVM/Iris.csv") to x;
 clean("remove nulls") in x;
-slit x "80-20" to train, test;
+slit x "80-20" to trn, tst;
+train RandomForest(100) on trn to model;
 print x; // prints the size of the dataframe -> "(150, 6)"
-print test;  //prints "(30, 6)"
-print train; //prints "(120, 6)"
+print tst;  //prints "(30, 6)"
+print trn; //prints "(120, 6)"
+
 

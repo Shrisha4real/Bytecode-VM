@@ -9,12 +9,16 @@
 #include"debug.h"
 #include"Parser.h"
 #include <array>
+#include<unordered_map>
 #include <cstring> // for strcmp
 
 typedef enum {
 	TYPE_FUNCTION,
 	TYPE_SCRIPT
 } FunctionType;
+
+
+
 
 class Chunk;
 class Parser;
@@ -133,6 +137,8 @@ public:
 	void parse_slit_statement();
 	void parse_load_statement();
 	void parse_clean_statement();
+	void parse_train_statement();
+	bool consume_model(token_type type, const std::string message);
 
 private:
 	inline void debug_print_code();

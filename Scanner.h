@@ -4,6 +4,11 @@
 #include "Token.h"
 #include "common.h"
 #include <cstring>
+static const std::unordered_map<std::string, std::pair<std::string, std::string>> MODEL_REGISTRY = {
+    {"RandomForest",       {"sklearn.ensemble",      "RandomForestClassifier"}},
+    {"LogisticRegression", {"sklearn.linear_model",  "LogisticRegression"}},
+    {"SVM",                {"sklearn.svm",           "SVC"}},
+};
 class Scanner {
     
 public:

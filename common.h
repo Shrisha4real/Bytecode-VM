@@ -33,9 +33,9 @@ enum OpCode {
 	OP_LOAD,
 	OP_CLEAN,
 	OP_SPLIT,
-
+	OP_TRAIN,
+	OP_MODEL_NAME,
 	OP_RETURN,
-
 };
 
 enum Precedence {
@@ -74,7 +74,7 @@ typedef enum {
 	TOKEN_PRINT, TOKEN_RETURN, TOKEN_SUPER, TOKEN_THIS,
 	TOKEN_TRUE, TOKEN_VAR, TOKEN_WHILE,
 
-	TOKEN_TO,	TOKEN_IN,	TOKEN_LOAD,	TOKEN_CLEAN,	TOKEN_SLIT,
+	TOKEN_TO, TOKEN_IN, TOKEN_ON ,TOKEN_LOAD, TOKEN_CLEAN,	TOKEN_SLIT,TOKEN_TRAIN,TOKEN_MODEL,
 
 	TOKEN_ERROR, TOKEN_EOF
 }token_type;
@@ -85,5 +85,6 @@ typedef enum {
 	INTERPRET_COMPILE_ERROR,
 	INTERPRET_RUNTIME_ERROR
 } InterpretResult;
+
 
 using parse_fn = std::function<void(bool can_assign)>;

@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "BytecodeVM"
+  "BytecodeVM.pdb"
   "CMakeFiles/BytecodeVM.dir/Object.cpp.o"
   "CMakeFiles/BytecodeVM.dir/Object.cpp.o.d"
   "CMakeFiles/BytecodeVM.dir/ParseRule.cpp.o"
@@ -25,8 +27,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/BytecodeVM.dir/main.cpp.o.d"
   "CMakeFiles/BytecodeVM.dir/vm.cpp.o"
   "CMakeFiles/BytecodeVM.dir/vm.cpp.o.d"
-  "bin/BytecodeVM"
-  "bin/BytecodeVM.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

@@ -343,6 +343,14 @@ InterpretResult VM::run() {
 			stack.push_back(std::move(result_pair.first));  // test
 			break;
 		}
+		case OpCode::OP_TRAIN: {
+			uint8_t argCount = read_byte(frame);
+			int arg_start = static_cast<int>(stack.size()) - argCount;
+			Value result = train_method(argCount, arg_start);
+			stack.erase(stack.end() - argCount, stack.end());
+			stack.push_back(std::move(result));
+			break;
+		}
 
 			
 		}
@@ -710,4 +718,82 @@ std::pair<Value, Value> VM::split_method(int arg_count, int stack_index) {
 		runtimeError(message);
 		return { Value::Nil(), Value::Nil() };
 	}
+}
+
+Value VM::train_method(int arg_count, int stack_index) {
+    // Accept 2 args (model_name, dataset) or 3 args (model_name, param, dataset)
+    if (arg_count != 2 && arg_count != 3) {
+        runtimeError("train() requires either 2 args (model, dataset) or 3 args (model, param, dataset).");
+        return Value::Nil();
+    }
+
+    Value& model_val = stack[stack_index + 0]; // always: model name
+    Value& data_val  = stack[stack_index + (arg_count == 2 ? 1 : 2)]; // dataset
+    Value* param_val = (arg_count == 3) ? &stack[stack_index + 1] : nullptr;
+
+    if (!Value::is_obj(model_val)) {
+        runtimeError("train(): first argument must be a string (model name).");
+        return Value::Nil();
+    }
+    if (!Value::is_py_obj(data_val)) {
+        runtimeError("train(): dataset must be a Python object.");
+        return Value::Nil();
+    }
+
+    try {
+        auto model_name_obj = std::dynamic_pointer_cast<ObjString>(model_val.as_obj());
+        const std::string& model_name = model_name_obj->get_string();
+
+        py::object Model = import_model_from_registry(model_name);
+
+        // Instantiate the model
+        py::object model;
+        if (model_name == "RandomForest") {
+            int n_estimators = 100; // default
+            if (param_val && Value::is_number(*param_val)) {
+                n_estimators = static_cast<int>(param_val->as_number());
+            }
+            model = Model(py::arg("n_estimators") = n_estimators,
+                          py::arg("random_state") = 42);
+        } else {
+            // For now: ignore param if provided
+            model = Model();
+        }
+
+        // Expect dataset as (X, y) tuple/list:www
+        py::object ds = data_val.as_py_object();
+        py::object X, y;
+
+        if (py::isinstance<py::tuple>(ds) || py::isinstance<py::list>(ds)) {
+            X = ds.attr("__getitem__")(0);
+            y = ds.attr("__getitem__")(1);
+        } else if (py::hasattr(ds, "X") && py::hasattr(ds, "y")) {
+            X = ds.attr("X");
+            y = ds.attr("y");
+        } else {
+            runtimeError("train(): dataset must be (X, y) or have attributes X and y.");
+            return Value::Nil();
+        }
+
+        model.attr("fit")(X, y);
+        return Value::PyObject(model);
+    }
+    catch (const py::error_already_set& e) {
+        runtimeError(std::string("Python error in train(): ") + e.what());
+        return Value::Nil();
+    }
+    catch (const std::exception& e) {
+        runtimeError(std::string("Error in train(): ") + e.what());
+        return Value::Nil();
+    }
+}
+
+
+py::object VM::import_model_from_registry(const std::string& model_name) {
+    auto it = MODEL_REGISTRY.find(model_name);
+    if (it == MODEL_REGISTRY.end()) {
+        throw std::runtime_error("Unsupported model: " + model_name);
+    }
+    const auto& [module_name, class_name] = it->second;
+    return py::module_::import(module_name.c_str()).attr(class_name.c_str());
 }

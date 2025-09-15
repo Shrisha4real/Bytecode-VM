@@ -71,7 +71,14 @@ int Debug::disassemble_instruction(Chunk* chunk,  int offset) {
 		return jump_instruction(chunk, "OP_LOOP", -1, offset);
 	case OpCode::OP_CALL:
 		return byte_instruction(chunk, "OP_CALL", offset);
-
+		case OpCode::OP_LOAD:
+		return simple_instruction("OP_LOAD", offset);
+	case OpCode::OP_CLEAN:
+		return simple_instruction("OP_CLEAN", offset);
+	case OpCode::OP_SPLIT:
+		return simple_instruction("OP_SPLIT", offset);
+	case OpCode::OP_TRAIN:
+		return 	simple_instruction("OP_TRAIN", offset);
 	default:
 		std::cout << "Unknown op code" << instruction << std::endl;
 		return offset+1;
