@@ -17,7 +17,11 @@ typedef enum {
 	TYPE_SCRIPT
 } FunctionType;
 
-
+static const std::unordered_map<std::string, std::pair<std::string, std::string>> MODEL_REGISTRY = {
+    {"RandomForest",       {"sklearn.ensemble",      "RandomForestClassifier"}},
+    {"LogisticRegression", {"sklearn.linear_model",  "LogisticRegression"}},
+    {"SVM",                {"sklearn.svm",           "SVC"}},
+};
 
 
 class Chunk;
@@ -139,7 +143,7 @@ public:
 	void parse_clean_statement();
 	void parse_train_statement();
 	bool consume_model(token_type type, const std::string message);
-
+	bool is_model_name(const std::string& name); 
 private:
 	inline void debug_print_code();
 };

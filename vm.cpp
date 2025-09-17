@@ -351,11 +351,20 @@ InterpretResult VM::run() {
 			stack.push_back(std::move(result));
 			break;
 		}
-
+		case OpCode::OP_MODEL_NAME: {
+  			Value& constant = read_constant(frame);
+			if (!Value::is_string(constant)) {
+				 runtimeError("OP_MODEL_NAME expected a string constant.");
+      				 break;
+    			}
+    // now move into stack
+   			stack.push_back(constant.clone());
+    			break;
+		}	
 			
 		}
 	}
-	std::cout << "return run()\n\n";
+	std::cout << "return run()\n\n";  
 }
 
 
@@ -740,44 +749,56 @@ Value VM::train_method(int arg_count, int stack_index) {
         return Value::Nil();
     }
 
-    try {
-        auto model_name_obj = std::dynamic_pointer_cast<ObjString>(model_val.as_obj());
-        const std::string& model_name = model_name_obj->get_string();
+	try {
 
-        py::object Model = import_model_from_registry(model_name);
+		auto model_name_obj = std::dynamic_pointer_cast<ObjString>(model_val.as_obj());
+		const std::string& model_name = model_name_obj->get_string();
+		py::object Model = import_model_from_registry(model_name);
+		// Instantiate the model
+		py::object model;
+		if (model_name == "RandomForest") {
+			int n_estimators = 100; // default
+			if (param_val && Value::is_number(*param_val)) {
+				n_estimators = static_cast<int>(param_val->as_number());
+			}
+			model = Model(py::arg("n_estimators") = n_estimators,py::arg("random_state") = 42);
+		} else {
+		// For now: ignore param if provided
+			model = Model();
+		}
+		// Expect dataset as (X, y) tuple/list/DataFrame/obj with .X and .y
+		py::object ds = data_val.as_py_object();
+		py::object X, y;
+		if (py::isinstance<py::tuple>(ds) || py::isinstance<py::list>(ds)) {
+			// Case 1: (X, y) tuple or list
+			X = ds.attr("__getitem__")(0);
+			y = ds.attr("__getitem__")(1);
+		} else if (py::hasattr(ds, "X") && py::hasattr(ds, "y")) {
+			// Case 2: object with .X and .y attributes
+			X = ds.attr("X");
+			y = ds.attr("y");
+		} else {
+			// Case 3: pandas DataFrame
+			auto pd = py::module_::import("pandas");
+			if (py::isinstance(ds, pd.attr("DataFrame"))) {
+				py::object iloc = ds.attr("iloc");
+				// X = all columns except last
+				X = iloc.attr("__getitem__")(py::make_tuple(
+				py::slice(py::none(), py::none(), py::int_(1)),py::slice(py::none(), py::int_(-1), py::int_(1))
+				));
+				// y = last column
+			y = iloc.attr("__getitem__")(py::make_tuple(
+					py::slice(py::none(), py::none(), py::int_(1)),-1	));
+			} else {
+				runtimeError("train(): dataset must be (X, y), have attributes X and y, or be a pandas DataFrame.");
+				return Value::Nil();
+			}
+		}
+		// Train the model
+		model.attr("fit")(X, y);
+		return Value::PyObject(model);
+	}
 
-        // Instantiate the model
-        py::object model;
-        if (model_name == "RandomForest") {
-            int n_estimators = 100; // default
-            if (param_val && Value::is_number(*param_val)) {
-                n_estimators = static_cast<int>(param_val->as_number());
-            }
-            model = Model(py::arg("n_estimators") = n_estimators,
-                          py::arg("random_state") = 42);
-        } else {
-            // For now: ignore param if provided
-            model = Model();
-        }
-
-        // Expect dataset as (X, y) tuple/list:www
-        py::object ds = data_val.as_py_object();
-        py::object X, y;
-
-        if (py::isinstance<py::tuple>(ds) || py::isinstance<py::list>(ds)) {
-            X = ds.attr("__getitem__")(0);
-            y = ds.attr("__getitem__")(1);
-        } else if (py::hasattr(ds, "X") && py::hasattr(ds, "y")) {
-            X = ds.attr("X");
-            y = ds.attr("y");
-        } else {
-            runtimeError("train(): dataset must be (X, y) or have attributes X and y.");
-            return Value::Nil();
-        }
-
-        model.attr("fit")(X, y);
-        return Value::PyObject(model);
-    }
     catch (const py::error_already_set& e) {
         runtimeError(std::string("Python error in train(): ") + e.what());
         return Value::Nil();

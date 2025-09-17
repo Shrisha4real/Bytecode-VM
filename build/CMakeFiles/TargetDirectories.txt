@@ -1,6 +1,0 @@
-/home/shrisha/projects/BytecodeVM/build/CMakeFiles/BytecodeVM.dir
-/home/shrisha/projects/BytecodeVM/build/CMakeFiles/build_and_run.dir
-/home/shrisha/projects/BytecodeVM/build/CMakeFiles/edit_cache.dir
-/home/shrisha/projects/BytecodeVM/build/CMakeFiles/rebuild_cache.dir
-/home/shrisha/projects/BytecodeVM/build/extern/pybind11/CMakeFiles/edit_cache.dir
-/home/shrisha/projects/BytecodeVM/build/extern/pybind11/CMakeFiles/rebuild_cache.dir
