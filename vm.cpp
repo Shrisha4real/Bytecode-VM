@@ -5,417 +5,420 @@
  ***************************************************************/
 
 #include "vm.h"
-#include"StringInterner.h"
+#include "Object.h"
+#include "ParseRule.h"
+#include "StringInterner.h"
+#include "Table.h"
 #include "Value.h"
-#include"Table.h"
-#include"Object.h"
-#include"ParseRule.h"
 #include <ctime>
-#include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
 
 CallFrame::CallFrame() : slot_base(0) {};
 CallFrame::CallFrame(std::shared_ptr<ObjFunction> func,
-	std::vector<uint8_t>::iterator ip_iter,
-	int slot_base)
-	: function(std::move(func)), ip(ip_iter), slot_base(slot_base) {
-}
+                     std::vector<uint8_t>::iterator ip_iter, int slot_base)
+    : function(std::move(func)), ip(ip_iter), slot_base(slot_base) {}
 
-VM::VM() : frames() , frame_count(0) , guard(){
-	//ip = (this->chunk->code).begin();
-	strings = std::make_shared<StringInterner>();
-	globals = std::make_shared<StringInterner>();
-	pandas = py::module_::import("pandas");
-	sklearn = py::module_::import("sklearn.ensemble");
+VM::VM() : frames(), frame_count(0), guard() {
+  // ip = (this->chunk->code).begin();
+  strings = std::make_shared<StringInterner>();
+  globals = std::make_shared<StringInterner>();
+  pandas = py::module_::import("pandas");
+  sklearn = py::module_::import("sklearn.ensemble");
 };
 
+uint8_t VM::read_byte(CallFrame *frame) { return *(frame->ip++); }
 
-uint8_t VM::read_byte(CallFrame* frame) {
-	return *(frame->ip++);
+Value &VM::read_constant(CallFrame *frame) {
+  try {
+    uint8_t index = read_byte(frame);
+    return frame->function->chunk.values.at(index);
+  } catch (const std::out_of_range &e) {
+    runtimeError("Constant index out of range.");
+
+    static Value dummy;
+    return dummy;
+  }
 }
 
-Value& VM::read_constant(CallFrame* frame) {
-	try {
-		uint8_t index = read_byte(frame);
-		return frame->function->chunk.values.at(index);
-	}
-	catch (const std::out_of_range& e) {
-		runtimeError("Constant index out of range.");
-
-		static Value dummy;
-		return dummy;
-	}
+std::shared_ptr<ObjString> VM::read_string(CallFrame *frame) {
+  Value &top_value = read_constant(frame);
+  if (Value::is_string(top_value)) {
+    return Value::as_string(top_value);
+  }
+  std::cerr << "Value is not a string.\n";
+  return nullptr;
 }
 
-std::shared_ptr<ObjString>  VM::read_string(CallFrame* frame) {
-	Value& top_value = read_constant(frame);
-	if (Value::is_string(top_value)) {
-		return Value::as_string(top_value);
-	}
-	std::cerr << "Value is not a string.\n";
-	return nullptr;
-}
-
-uint16_t VM::read_short(CallFrame* frame) {
-	frame->ip += 2;
-	return static_cast<uint16_t>(*(frame->ip - 2) << 8 | *(frame->ip - 1));
+uint16_t VM::read_short(CallFrame *frame) {
+  frame->ip += 2;
+  return static_cast<uint16_t>(*(frame->ip - 2) << 8 | *(frame->ip - 1));
 }
 
 InterpretResult VM::run() {
-	std::cout << "\nexecuting run()\n";
-	CallFrame* frame = &frames[frame_count - 1];
+  std::cout << "\nexecuting run()\n";
+  CallFrame *frame = &frames[frame_count - 1];
 
-	while (true) {
-		
-		//std::cout << "run() stackprint\t";
-		
-		/*for (auto it = stack.begin(); it != stack.end(); it++) {
-			std::cout << "[ ";
-			std::visit([](auto&& arg) {
-				using T = std::decay_t<decltype(arg)>;
-				if constexpr (std::is_same_v<T, std::monostate>) {
-					std::cout << "nil";
-				}
-				else if constexpr (std::is_same_v< T,std::shared_ptr<Object>>) {
-					std::cout << "object:\t";
-					arg->print();
-				}
-				else {
-					std::cout << arg;
-				}
-				}, it->data);
+  while (true) {
 
-			std::cout << " ]\t";
-		}*/
-		//std::cout << std::endl;
-  		Chunk* frame_ptr = &(frame->function->chunk);
- 		//CHECK the pointer values are apssed on to the function
-		Debug::disassemble_instruction(frame_ptr, static_cast<int>((frame->ip) - ((frame->function->chunk.code).begin())));
-	
-		uint8_t instruction;
-		switch (instruction = read_byte(frame)) {
+    // std::cout << "run() stackprint\t";
 
-		case OpCode::OP_CONSTANT: {
-			Value& constant = read_constant(frame);
-			stack.push_back(std::move(constant));
-  			std::cout << "run() -> case:OP_CONSTANT ";
+    /*for (auto it = stack.begin(); it != stack.end(); it++) {
+            std::cout << "[ ";
+            std::visit([](auto&& arg) {
+                    using T = std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, std::monostate>) {
+                            std::cout << "nil";
+                    }
+                    else if constexpr (std::is_same_v<
+    T,std::shared_ptr<Object>>) { std::cout << "object:\t"; arg->print();
+                    }
+                    else {
+                            std::cout << arg;
+                    }
+                    }, it->data);
 
-			std::visit([](auto&& arg) {
-				using T = std::decay_t<decltype(arg)>;
-				if constexpr (std::is_same_v<T, std::monostate>) {
-					std::cout << "nil";
-				}
-				else if constexpr (std::is_same_v< T, std::shared_ptr<Object>>) {
+            std::cout << " ]\t";
+    }*/
+    // std::cout << std::endl;
+    Chunk *frame_ptr = &(frame->function->chunk);
+    // CHECK the pointer values are apssed on to the function
+    Debug::disassemble_instruction(
+        frame_ptr, static_cast<int>((frame->ip) -
+                                    ((frame->function->chunk.code).begin())));
 
-					arg->print();
-				}
-				else if constexpr (std::is_same_v< T,py::object>) {
-					std::cout << "python obj";
-				}
-				else {
-					std::cout << arg;
-				}
-				}, stack.back().data);
-			std::cout << std::endl;
+    uint8_t instruction;
+    switch (instruction = read_byte(frame)) {
 
-			break;
-		}		
-		case OpCode::OP_NEGATE:{
-			auto b = std::move(stack.back()).as_number();
-			stack.pop_back();
-			stack.push_back(Value::Number(-b));
-			break;
-		}
-		case OpCode::OP_ADD: {
-			//binary_op('+'); 
-			if (Value::is_number(this->peek(0)) && Value::is_number(this->peek(1))) {
-				
-				double b = std::move(stack.back()).as_number();
-				double a = std::move(stack.at(stack.size() - 2)).as_number();
-				stack.pop_back();
-				stack.pop_back();
-				stack.push_back(Value::Number(a + b));
-			
-			}
-			else if (Value::is_string(this->peek(0)) && Value::is_string(this->peek(1))) {
-				concatinate();
-			}
-			else {
-				runtimeError("Operands must be numbers.");
-				return InterpretResult::INTERPRET_RUNTIME_ERROR;
+    case OpCode::OP_CONSTANT: {
+      Value &constant = read_constant(frame);
+      stack.push_back(std::move(constant));
+      std::cout << "run() -> case:OP_CONSTANT ";
 
-			}
-			
-			break;
+      std::visit(
+          [](auto &&arg) {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, std::monostate>) {
+              std::cout << "nil";
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
 
-		};
-		/*
-		case OpCode::OP_INCREMENT: {
-			if (Value::is_number(this->peek(0)) ){
-				double b = std::move(stack.back()).as_number();
-				stack.push_back(Value::Number( b+1));
-			}
-			else {
-				runtimeError("Operands must be numbers.");
-				return InterpretResult::INTERPRET_RUNTIME_ERROR;
-			}
-		}
-		case OpCode::OP_DECREMENT: {
-			if (Value::is_number(this->peek(0))) {
-				double b = std::move(stack.back()).as_number();
-				stack.push_back(Value::Number(b -1));
-			}
-			else {
-				runtimeError("Operands must be numbers.");
-				return InterpretResult::INTERPRET_RUNTIME_ERROR;
-			}
-		}
-		*/
-		case OpCode::OP_SUBTRACT: binary_op('-'); break;
-		case OpCode::OP_MULTIPLY: binary_op('*'); break;		
-		case OpCode::OP_DIVIDE: binary_op('/'); break;
-		case OpCode::OP_GREATER:  binary_op('>'); break;
-		case OpCode::OP_LESS:     binary_op('<'); break;
-		case OpCode::OP_NIL: stack.push_back(Value::Nil()); break;
-		case OpCode::OP_FALSE: stack.push_back(Value::Bool(false)); break;
-		case OpCode::OP_TRUE: stack.push_back(Value::Bool(true)); break;
-		
-		case OpCode::OP_EQUAL: {
-			Value b = std::move(stack.back());
-			stack.pop_back();
-			Value a = std::move(stack.back());
-			stack.pop_back();
-			stack.push_back(Value::Bool(Value::valuesEqual(a, b)));
-			break;
-		}
+              arg->print();
+            } else if constexpr (std::is_same_v<T, py::object>) {
+              std::cout << "python obj";
+            } else {
+              std::cout << arg;
+            }
+          },
+          stack.back().data);
+      std::cout << std::endl;
 
-		case OpCode::OP_NOT:
-		{
-			Value back = std::move(stack.back());
-			stack.pop_back();
-			stack.push_back(Value::Bool(is_falsey(back)));
-			break;
-		}
+      break;
+    }
+    case OpCode::OP_NEGATE: {
+      auto b = std::move(stack.back()).as_number();
+      stack.pop_back();
+      stack.push_back(Value::Number(-b));
+      break;
+    }
+    case OpCode::OP_ADD: {
+      // binary_op('+');
+      if (Value::is_number(this->peek(0)) && Value::is_number(this->peek(1))) {
 
-		case OpCode::OP_PRINT: {
-			Value::print_value(pop());
-			//std::cout << std::endl;
-			break;
-		}
-		case OpCode::OP_POP: {
-			Value popped = pop();
-			break; 
-		}
-		case OpCode::OP_GET_LOCAL: {
-			uint8_t slot = read_byte(frame);
-			//CHECK slot -1
-			//stack.push_back(frame.function->chunk.values.at(frame.slot_base + static_cast<int>(slot) ).clone());
-			/*int stack_index = frame->slot_base + slot ;
-			Value slot_value = frame.function->chunk.values.at(stack_index).clone();
-			stack.push_back(std::move(slot_value));*/
+        double b = std::move(stack.back()).as_number();
+        double a = std::move(stack.at(stack.size() - 2)).as_number();
+        stack.pop_back();
+        stack.pop_back();
+        stack.push_back(Value::Number(a + b));
 
- 			//stack.push_back((frame->slots + slot - 1)->clone());
+      } else if (Value::is_string(this->peek(0)) &&
+                 Value::is_string(this->peek(1))) {
+        concatinate();
+      } else {
+        runtimeError("Operands must be numbers.");
+        return InterpretResult::INTERPRET_RUNTIME_ERROR;
+      }
 
-			stack.push_back(stack.at(frame->slot_base+slot).clone());
-			break;
-		}
-		case OpCode::OP_SET_LOCAL: {
-			try {
-				int slot = read_byte(frame) ;
-				if (slot < 0 || slot >= static_cast<int>(stack.size())) {
-					std::cerr << "Runtime Error: Invalid stack slot access: " << slot << "\n";
-					
-					//("Invalid local variable access.");
-					return INTERPRET_RUNTIME_ERROR;
-				}
-				Value& target = stack.at((frame->slot_base + slot)); // throws if slot is out of bounds
-				target.set(peek(0));
-				
-				/*(frame->slot_base + slot)->set(peek(0));*/
+      break;
+    };
+    /*
+    case OpCode::OP_INCREMENT: {
+            if (Value::is_number(this->peek(0)) ){
+                    double b = std::move(stack.back()).as_number();
+                    stack.push_back(Value::Number( b+1));
+            }
+            else {
+                    runtimeError("Operands must be numbers.");
+                    return InterpretResult::INTERPRET_RUNTIME_ERROR;
+            }
+    }
+    case OpCode::OP_DECREMENT: {
+            if (Value::is_number(this->peek(0))) {
+                    double b = std::move(stack.back()).as_number();
+                    stack.push_back(Value::Number(b -1));
+            }
+            else {
+                    runtimeError("Operands must be numbers.");
+                    return InterpretResult::INTERPRET_RUNTIME_ERROR;
+            }
+    }
+    */
+    case OpCode::OP_SUBTRACT:
+      binary_op('-');
+      break;
+    case OpCode::OP_MULTIPLY:
+      binary_op('*');
+      break;
+    case OpCode::OP_DIVIDE:
+      binary_op('/');
+      break;
+    case OpCode::OP_GREATER:
+      binary_op('>');
+      break;
+    case OpCode::OP_LESS:
+      binary_op('<');
+      break;
+    case OpCode::OP_NIL:
+      stack.push_back(Value::Nil());
+      break;
+    case OpCode::OP_FALSE:
+      stack.push_back(Value::Bool(false));
+      break;
+    case OpCode::OP_TRUE:
+      stack.push_back(Value::Bool(true));
+      break;
 
-			}
-			catch (const std::out_of_range& e) {
-				std::cerr << "Runtime Error: Attempted to set local at invalid stack slot.\n";
-				runtimeError("Invalid local variable access.");
-				return INTERPRET_RUNTIME_ERROR;
-			}
-			break;
-		}
+    case OpCode::OP_EQUAL: {
+      Value b = std::move(stack.back());
+      stack.pop_back();
+      Value a = std::move(stack.back());
+      stack.pop_back();
+      stack.push_back(Value::Bool(Value::valuesEqual(a, b)));
+      break;
+    }
 
-		case OpCode::OP_DEFINE_GLOBAL: {
+    case OpCode::OP_NOT: {
+      Value back = std::move(stack.back());
+      stack.pop_back();
+      stack.push_back(Value::Bool(is_falsey(back)));
+      break;
+    }
 
-			std::shared_ptr<ObjString>  name = read_string(frame);
-			globals->get_table()->insert(name , peek(0));
-			pop();
-			break;
-		}
-		case OpCode::OP_GET_GLOBAL: {
-			std::shared_ptr<ObjString>  name = read_string(frame);
-			Value* value = globals->get_table()->find(name);
-			if (!value) {
-				runtimeError("undefined variable -> " + name->get_string());
-				return InterpretResult::INTERPRET_RUNTIME_ERROR;
-			}
-			stack.push_back(value->clone());
-			break;
-		}
-		//FIXME: if the back of the stack is a bool like true then this doesnt work
-		case OpCode::OP_SET_GLOBAL: {
-			std::shared_ptr<ObjString>  name = read_string(frame);
-			if (globals->get_table()->insert(name, peek(0))) {
-				globals->get_table()->remove(name);
-				runtimeError("undefined variable -> " + name->get_string());
-				return InterpretResult::INTERPRET_RUNTIME_ERROR;
-			}
-			break;
-		}
-		case::OpCode::OP_JUMP_IF_FALSE: {
- 			uint16_t offset = read_short(frame);
-			if (is_falsey(peek(0))) {
-				frame->ip += offset;
-			}
-			break;
-		}
-		case::OpCode::OP_JUMP: {
-			uint16_t offset = read_short(frame);
-			frame->ip += offset;
-			break;
-		}
-		case OpCode::OP_LOOP: {
-			uint16_t offset = read_short(frame);
-			frame->ip -= offset;
-			break;
-		}
-		case OpCode::OP_CALL: {
-			int arg_count = read_byte(frame);
-			if (!call_value(peek(arg_count), arg_count)) {
-				return InterpretResult::INTERPRET_RUNTIME_ERROR;
+    case OpCode::OP_PRINT: {
+      Value::print_value(pop());
+      // std::cout << std::endl;
+      break;
+    }
+    case OpCode::OP_POP: {
+      Value popped = pop();
+      break;
+    }
+    case OpCode::OP_GET_LOCAL: {
+      uint8_t slot = read_byte(frame);
+      // CHECK slot -1
+      // stack.push_back(frame.function->chunk.values.at(frame.slot_base +
+      // static_cast<int>(slot) ).clone());
+      /*int stack_index = frame->slot_base + slot ;
+      Value slot_value = frame.function->chunk.values.at(stack_index).clone();
+      stack.push_back(std::move(slot_value));*/
 
-			}
-			frame = &frames[frame_count - 1];
-			break;
-		}
-		case OpCode::OP_RETURN: {
-			Value result = pop();
-			frame_count--;
-			if (frame_count == 0) {
-				Value value = pop();
-				std::cout << std::endl;
-				return InterpretResult::INTERPRET_OK;
-			}
-			
-			stack.resize(frames[frame_count].slot_base);
+      // stack.push_back((frame->slots + slot - 1)->clone());
 
-			stack.push_back(std::move(result));
-			frame = &frames[frame_count-1];
-			break;
-		}
-		case OpCode::OP_LOAD: {
-			uint8_t arg_count = read_byte(frame);
-			int arg_start = static_cast<int>(stack.size()) - arg_count;
-			Value result = load_native(arg_count, arg_start);
-			stack.erase(stack.end() - arg_count, stack.end());
-			stack.push_back(std::move(result));
-			//Value result = pop();
-			break;
-		}
-		case OpCode::OP_CLEAN: {
-			uint8_t arg_count = read_byte(frame);
-			int arg_start = static_cast<int>(stack.size()) - arg_count;
-			Value result = clean_native(arg_count, arg_start);
-			stack.erase(stack.end() - arg_count, stack.end());
-			stack.push_back(std::move(result));
-			break;
-		}
-		case OpCode::OP_SPLIT: {
-			// Unlike clean, split needs: ratio + dataframe
-			uint8_t arg_count = read_byte(frame);
-			int arg_start = static_cast<int>(stack.size()) - arg_count;
+      stack.push_back(stack.at(frame->slot_base + slot).clone());
+      break;
+    }
+    case OpCode::OP_SET_LOCAL: {
+      try {
+        int slot = read_byte(frame);
+        if (slot < 0 || slot >= static_cast<int>(stack.size())) {
+          std::cerr << "Runtime Error: Invalid stack slot access: " << slot
+                    << "\n";
 
-			// Call helper
-			auto result_pair = split_method(arg_count, arg_start);
+          //("Invalid local variable access.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        Value &target = stack.at(
+            (frame->slot_base + slot)); // throws if slot is out of bounds
+        target.set(peek(0));
 
-			// Remove arguments
-			stack.erase(stack.end() - arg_count, stack.end());
+        /*(frame->slot_base + slot)->set(peek(0));*/
 
-			// Push back both train and test DataFrames
-			stack.push_back(std::move(result_pair.second));   // train
-			stack.push_back(std::move(result_pair.first));  // test
-			break;
-		}
-		case OpCode::OP_TRAIN: {
-			uint8_t argCount = read_byte(frame);
-			int arg_start = static_cast<int>(stack.size()) - argCount;
-			Value result = train_method(argCount, arg_start);
-			stack.erase(stack.end() - argCount, stack.end());
-			stack.push_back(std::move(result));
-			break;
-		}
-		case OpCode::OP_MODEL_NAME: {
-  			Value& constant = read_constant(frame);
-			if (!Value::is_string(constant)) {
-				 runtimeError("OP_MODEL_NAME expected a string constant.");
-      				 break;
-    			}
-    // now move into stack
-   			stack.push_back(constant.clone());
-    			break;
-		}	
-			
-		}
-	}
-	std::cout << "return run()\n\n";  
+      } catch (const std::out_of_range &e) {
+        std::cerr
+            << "Runtime Error: Attempted to set local at invalid stack slot.\n";
+        runtimeError("Invalid local variable access.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+      break;
+    }
+
+    case OpCode::OP_DEFINE_GLOBAL: {
+
+      std::shared_ptr<ObjString> name = read_string(frame);
+      globals->get_table()->insert(name, peek(0));
+      pop();
+      break;
+    }
+    case OpCode::OP_GET_GLOBAL: {
+      std::shared_ptr<ObjString> name = read_string(frame);
+      Value *value = globals->get_table()->find(name);
+      if (!value) {
+        runtimeError("undefined variable -> " + name->get_string());
+        return InterpretResult::INTERPRET_RUNTIME_ERROR;
+      }
+      stack.push_back(value->clone());
+      break;
+    }
+    // FIXME: if the back of the stack is a bool like true then this doesnt work
+    case OpCode::OP_SET_GLOBAL: {
+      std::shared_ptr<ObjString> name = read_string(frame);
+      if (globals->get_table()->insert(name, peek(0))) {
+        globals->get_table()->remove(name);
+        runtimeError("undefined variable -> " + name->get_string());
+        return InterpretResult::INTERPRET_RUNTIME_ERROR;
+      }
+      break;
+    }
+    case ::OpCode::OP_JUMP_IF_FALSE: {
+      uint16_t offset = read_short(frame);
+      if (is_falsey(peek(0))) {
+        frame->ip += offset;
+      }
+      break;
+    }
+    case ::OpCode::OP_JUMP: {
+      uint16_t offset = read_short(frame);
+      frame->ip += offset;
+      break;
+    }
+    case OpCode::OP_LOOP: {
+      uint16_t offset = read_short(frame);
+      frame->ip -= offset;
+      break;
+    }
+    case OpCode::OP_CALL: {
+      int arg_count = read_byte(frame);
+      if (!call_value(peek(arg_count), arg_count)) {
+        return InterpretResult::INTERPRET_RUNTIME_ERROR;
+      }
+      frame = &frames[frame_count - 1];
+      break;
+    }
+    case OpCode::OP_RETURN: {
+      Value result = pop();
+      frame_count--;
+      if (frame_count == 0) {
+        Value value = pop();
+        std::cout << std::endl;
+        return InterpretResult::INTERPRET_OK;
+      }
+
+      stack.resize(frames[frame_count].slot_base);
+
+      stack.push_back(std::move(result));
+      frame = &frames[frame_count - 1];
+      break;
+    }
+    case OpCode::OP_LOAD: {
+      uint8_t arg_count = read_byte(frame);
+      int arg_start = static_cast<int>(stack.size()) - arg_count;
+      Value result = load_native(arg_count, arg_start);
+      stack.erase(stack.end() - arg_count, stack.end());
+      stack.push_back(std::move(result));
+      // Value result = pop();
+      break;
+    }
+    case OpCode::OP_CLEAN: {
+      uint8_t arg_count = read_byte(frame);
+      int arg_start = static_cast<int>(stack.size()) - arg_count;
+      Value result = clean_native(arg_count, arg_start);
+      stack.erase(stack.end() - arg_count, stack.end());
+      stack.push_back(std::move(result));
+      break;
+    }
+    case OpCode::OP_SPLIT: {
+      // Unlike clean, split needs: ratio + dataframe
+      uint8_t arg_count = read_byte(frame);
+      int arg_start = static_cast<int>(stack.size()) - arg_count;
+
+      // Call helper
+      auto result_pair = split_method(arg_count, arg_start);
+
+      // Remove arguments
+      stack.erase(stack.end() - arg_count, stack.end());
+
+      // Push back both train and test DataFrames
+      stack.push_back(std::move(result_pair.second)); // train
+      stack.push_back(std::move(result_pair.first));  // test
+      break;
+    }
+    case OpCode::OP_TRAIN: {
+      uint8_t argCount = read_byte(frame);
+      int arg_start = static_cast<int>(stack.size()) - argCount;
+      Value result = train_method(argCount, arg_start);
+      stack.erase(stack.end() - argCount, stack.end());
+      stack.push_back(std::move(result));
+      break;
+    }
+    case OpCode::OP_MODEL_NAME: {
+      Value &constant = read_constant(frame);
+      if (!Value::is_string(constant)) {
+        runtimeError("OP_MODEL_NAME expected a string constant.");
+        break;
+      }
+      // now move into stack
+      stack.push_back(constant.clone());
+      break;
+    }
+    }
+  }
+  std::cout << "return run()\n\n";
 }
 
-
-
-
 void VM::binary_op(char op) {
-	if (!Value::is_number(this->peek(0)) || !Value::is_number(this->peek(1))) {
-		runtimeError("Operands must be numbers.");
-		return;
-		//FIXME: should return INTERPRET_RUNTIME_ERROR
-	}
-	Value b_val = std::move(stack.back());
-	Value a_val = std::move(stack.at(stack.size() - 2));
-	double b = b_val.as_number();
-	double a = a_val.as_number();
-	stack.pop_back();
-	stack.pop_back();
-	switch (op) {		
-	case '+': {
-				stack.push_back(Value::Number(a + b));
-		break;
-	}
-	case '-': {
-		stack.push_back(Value::Number(a - b));
-		break;
-	}
-	case '*': {
-		stack.push_back(Value::Number(a * b));
-		break;
-	}
-	case '/': {
-		if (b != 0) {
-			stack.push_back(Value::Number(a / b));
-		}
-		else {
-			runtimeError("Division by zero!\n");
-			return;
-			/*std::cerr << "Division by zero!\n";*/
-		}
-		break;
-	}
-	case'>':
-		stack.push_back(Value::Bool(a > b));
-		break;
-	case'<':
-		stack.push_back(Value::Bool(a < b));
-		break;
-	default:
-		std::cerr << "Invalid operator!\n";
-		break;
-	}
+  if (!Value::is_number(this->peek(0)) || !Value::is_number(this->peek(1))) {
+    runtimeError("Operands must be numbers.");
+    return;
+    // FIXME: should return INTERPRET_RUNTIME_ERROR
+  }
+  Value b_val = std::move(stack.back());
+  Value a_val = std::move(stack.at(stack.size() - 2));
+  double b = b_val.as_number();
+  double a = a_val.as_number();
+  stack.pop_back();
+  stack.pop_back();
+  switch (op) {
+  case '+': {
+    stack.push_back(Value::Number(a + b));
+    break;
+  }
+  case '-': {
+    stack.push_back(Value::Number(a - b));
+    break;
+  }
+  case '*': {
+    stack.push_back(Value::Number(a * b));
+    break;
+  }
+  case '/': {
+    if (b != 0) {
+      stack.push_back(Value::Number(a / b));
+    } else {
+      runtimeError("Division by zero!\n");
+      return;
+      /*std::cerr << "Division by zero!\n";*/
+    }
+    break;
+  }
+  case '>':
+    stack.push_back(Value::Bool(a > b));
+    break;
+  case '<':
+    stack.push_back(Value::Bool(a < b));
+    break;
+  default:
+    std::cerr << "Invalid operator!\n";
+    break;
+  }
 }
 
 /*
@@ -423,398 +426,396 @@ void VM::binary_op(char op) {
  * Purpose : interpretes the DSL
  * Returns : the status of interpretation
  */
-InterpretResult VM::intepret(const std::string& source) {
-	//this->define_native("clock", VM::clock_native);
-	//this->define_native("clock", load_native);
+InterpretResult VM::intepret(const std::string &source) {
+  // this->define_native("clock", VM::clock_native);
+  // this->define_native("clock", load_native);
 
-	define_native("clock", [this](int argc, int idx) {
-		return this->clock_native(argc, idx);
-		});
-	//define_native("load", [this](int argc, int idx) {
-	//	return this->load_native(argc, idx);
-	//	});
-	//define_native("clean", [this](int argc, int idx) {
-	//	return this->clean_native(argc, idx);
-	//	});
-	Compiler compiler(source , this->strings);
+  define_native("clock", [this](int argc, int idx) {
+    return this->clock_native(argc, idx);
+  });
+  define_native("load", [this](int argc, int idx) {
+  	return this->load_native(argc, idx);
+  // define_native("clean", [this](int argc, int idx) {
+  //	return this->clean_native(argc, idx);
+  	});
+  Compiler compiler(source, this->strings);
 
+  std::shared_ptr<ObjFunction> function = compiler.compile();
+  if (!function) {
+    // delete chunk;
+    return InterpretResult::INTERPRET_COMPILE_ERROR;
+  }
+  // this->chunk = chunk;
+  // this->ip = (chunk->code).begin();
+  CallFrame frame(function, function->chunk.code.begin(), 0);
 
-	std::shared_ptr<ObjFunction> function = compiler.compile();
-	if (!function) {
-		//delete chunk;
-		return InterpretResult::INTERPRET_COMPILE_ERROR;
+  stack.push_back(Value::Obj(function));
 
-	}
-	//this->chunk = chunk;
-	//this->ip = (chunk->code).begin();
-	CallFrame frame(function, function->chunk.code.begin(),0);
+  frames[frame_count++] = frame; // function starts using stack from here
+  // frame_count++;
 
-	stack.push_back(Value::Obj(function));
+  InterpretResult result = this->run();
 
-	frames[frame_count++] = frame; // function starts using stack from here
-	//frame_count++;
-	
-	InterpretResult result = this->run();
-
-	//delete chunk;
-	return result;
-
+  // delete chunk;
+  return result;
 }
-void VM::runtimeError(const std::string& message) {
-	std::cerr << message << "\n";
-	CallFrame* frame = &frames[frame_count-1];
-	size_t instruction = std::distance(frame->function->chunk.code.begin(), frame->ip) - 1;
-	int line = frame->function->chunk.lines[instruction];
-	std::cerr << "[line " << line << "] in script\n";
-	for (int i = frame_count - 1; i >= 0; i--) {
-		//CallFrame* frame = frames[i];
-		std::shared_ptr<ObjFunction> function = frames[i].function;
-		size_t instruction = static_cast<size_t>((frame->ip) - ((frame->function->chunk.code).begin()));
-		std::cerr << "[line " << function->chunk.lines[instruction]<<" ] in" << std::endl;
+void VM::runtimeError(const std::string &message) {
+  std::cerr << message << "\n";
+  CallFrame *frame = &frames[frame_count - 1];
+  size_t instruction =
+      std::distance(frame->function->chunk.code.begin(), frame->ip) - 1;
+  int line = frame->function->chunk.lines[instruction];
+  std::cerr << "[line " << line << "] in script\n";
+  for (int i = frame_count - 1; i >= 0; i--) {
+    // CallFrame* frame = frames[i];
+    std::shared_ptr<ObjFunction> function = frames[i].function;
+    size_t instruction = static_cast<size_t>(
+        (frame->ip) - ((frame->function->chunk.code).begin()));
+    std::cerr << "[line " << function->chunk.lines[instruction] << " ] in"
+              << std::endl;
 
-		if (function->name == nullptr) {
-			std::cerr<< " no name: script\n";
-		}
-		else {
-			std::cout<< function->name->get_string();
-		}
-	}
-	this->stack.clear();
+    if (function->name == nullptr) {
+      std::cerr << " no name: script\n";
+    } else {
+      std::cout << function->name->get_string();
+    }
+  }
+  this->stack.clear();
 }
 
-
-Value& VM::peek(int distance) {
-	if 
-		(distance > this->stack.size() - 1) {
-		runtimeError("Unreachable peek");
-		std::exit(404);
-
-	}
-	return this->stack.at(this->stack.size() - 1 - distance);
+Value &VM::peek(int distance) {
+  if (distance > this->stack.size() - 1) {
+    runtimeError("Unreachable peek");
+    std::exit(404);
+  }
+  return this->stack.at(this->stack.size() - 1 - distance);
 }
 
-//CHECK IF CONDITION FOR ALL CASES
-bool VM::is_falsey(Value& value) {
-	return std::visit([&](auto&& arg) -> bool {
-		using T = std::decay_t<decltype(arg)>;
+// CHECK IF CONDITION FOR ALL CASES
+bool VM::is_falsey(Value &value) {
+  return std::visit(
+      [&](auto &&arg) -> bool {
+        using T = std::decay_t<decltype(arg)>;
 
-		// nil is falsey
-		if constexpr (std::is_same_v<T, std::monostate>) {
-			return true;
-		}
-		// Boolean false is falsey
-		else if constexpr (std::is_same_v<T, bool>) {
-			return arg == false;
-		}
-		// Handle objects like strings
-		else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
-			if (arg && arg->obj_type() == ObjType::OBJ_STRING) {
-				auto strObj = std::static_pointer_cast<ObjString>(arg);
-				return strObj->get_string().empty();
-			}
-			return false;
-		}
-		else if constexpr (std::is_same_v < T, double >) {
-			return arg == static_cast<double>(0);
-		}
-		else {
-			return false;
-		}
-		}, value.data);
+        // nil is falsey
+        if constexpr (std::is_same_v<T, std::monostate>) {
+          return true;
+        }
+        // Boolean false is falsey
+        else if constexpr (std::is_same_v<T, bool>) {
+          return arg == false;
+        }
+        // Handle objects like strings
+        else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
+          if (arg && arg->obj_type() == ObjType::OBJ_STRING) {
+            auto strObj = std::static_pointer_cast<ObjString>(arg);
+            return strObj->get_string().empty();
+          }
+          return false;
+        } else if constexpr (std::is_same_v<T, double>) {
+          return arg == static_cast<double>(0);
+        } else {
+          return false;
+        }
+      },
+      value.data);
 }
 
-//FIXME: The ObjString pointer is pointing to the shared_ptr
+// FIXME: The ObjString pointer is pointing to the shared_ptr
 void VM::concatinate() {
-	// Get the top two values on the stack
-	std::shared_ptr<ObjString> b = Value::as_string(stack.back());
-	if (!b) {
-		std::cerr << "Right operand is not a string\n";
-		return;
-	}
-	stack.pop_back();
+  // Get the top two values on the stack
+  std::shared_ptr<ObjString> b = Value::as_string(stack.back());
+  if (!b) {
+    std::cerr << "Right operand is not a string\n";
+    return;
+  }
+  stack.pop_back();
 
-	std::shared_ptr<ObjString> a = Value::as_string(stack.back());
-	if (!a) {
-		std::cerr << "Left operand is not a string\n";
-		return;
-	}
-	stack.pop_back();
+  std::shared_ptr<ObjString> a = Value::as_string(stack.back());
+  if (!a) {
+    std::cerr << "Left operand is not a string\n";
+    return;
+  }
+  stack.pop_back();
 
-	// Create a new ObjString with the concatenated result
-	std::string combined = a->get_string() + b->get_string();  // Combine strings
-	std::shared_ptr<ObjString> result = std::make_shared<ObjString>(combined);
+  // Create a new ObjString with the concatenated result
+  std::string combined = a->get_string() + b->get_string(); // Combine strings
+  std::shared_ptr<ObjString> result = std::make_shared<ObjString>(combined);
 
-	// Push the result back onto the stack
-	stack.push_back(Value::Obj(result));
+  // Push the result back onto the stack
+  stack.push_back(Value::Obj(result));
 }
 
 Value VM::pop() {
-	Value val = std::move(stack.back());
-	stack.pop_back();
-	return val;
+  Value val = std::move(stack.back());
+  stack.pop_back();
+  return val;
 }
-bool VM::call_value(Value& callee, int arg_count) {
-	if (Value::is_obj(callee)) {
-		switch (callee.as_obj()->obj_type()) {
-		case ObjType::OBJ_FUNCTION: {
-			return call(Value::as_function(callee), arg_count);
-		}
-		case ObjType::OBJ_NATIVE: {
-			NativeFn native = Value::as_native(callee);
-			int arg_start = static_cast<int>(stack.size()) - arg_count;
-			Value result = native(arg_count, arg_start);
-			stack.erase(stack.end() - (arg_count + 1), stack.end());
-			stack.push_back(std::move(result));
-			return true;
-
-		}
-		default:
-			break;
-		}
-	}
-	runtimeError("Can only call functions and classes.");
-	return false;
+bool VM::call_value(Value &callee, int arg_count) {
+  if (Value::is_obj(callee)) {
+    switch (callee.as_obj()->obj_type()) {
+    case ObjType::OBJ_FUNCTION: {
+      return call(Value::as_function(callee), arg_count);
+    }
+    case ObjType::OBJ_NATIVE: {
+      NativeFn native = Value::as_native(callee);
+      int arg_start = static_cast<int>(stack.size()) - arg_count;
+      Value result = native(arg_count, arg_start);
+      stack.erase(stack.end() - (arg_count + 1), stack.end());
+      stack.push_back(std::move(result));
+      return true;
+    }
+    default:
+      break;
+    }
+  }
+  runtimeError("Can only call functions and classes.");
+  return false;
 }
 bool VM::call(std::shared_ptr<ObjFunction> function, int arg_count) {
-	if (arg_count != function->arity) {
-		std::string errorMessage = "expected " + std::to_string(function->arity) + " arguments but got " + std::to_string(arg_count) + " arguments";
-		runtimeError(errorMessage);
-		return false;
-	}
-	int slot_base = stack.size() - arg_count - 1;
-	CallFrame frame(function, function->chunk.code.begin(), slot_base);
-	frames[frame_count] = frame;
-	frame_count++;
-	return true;
+  if (arg_count != function->arity) {
+    std::string errorMessage = "expected " + std::to_string(function->arity) +
+                               " arguments but got " +
+                               std::to_string(arg_count) + " arguments";
+    runtimeError(errorMessage);
+    return false;
+  }
+  int slot_base = stack.size() - arg_count - 1;
+  CallFrame frame(function, function->chunk.code.begin(), slot_base);
+  frames[frame_count] = frame;
+  frame_count++;
+  return true;
 }
 
+void VM::define_native(const std::string &name, NativeFn function) {
+  auto nameObj =
+      globals->copy_string(name.data(), static_cast<int>(name.size()));
+  auto nativeObj = std::make_shared<ObjNative>(function);
 
-void VM::define_native(const std::string& name, NativeFn function) {
-	auto nameObj = globals->copy_string(name.data(), static_cast<int>(name.size()));
-	auto nativeObj = std::make_shared<ObjNative>(function);
-
-	stack.push_back(Value::Obj(nameObj));
-	stack.push_back(Value::Obj(nativeObj));
-	globals->get_table()->insert(nameObj,stack[1]);
-	stack.pop_back();
-	stack.pop_back();
+  stack.push_back(Value::Obj(nameObj));
+  stack.push_back(Value::Obj(nativeObj));
+  globals->get_table()->insert(nameObj, stack[1]);
+  stack.pop_back();
+  stack.pop_back();
 }
 
 Value VM::clock_native(int argCount, int stackIndex) {
-	if (argCount != 0) {
-			runtimeError("clock() takes only 1 argument");
-			std::exit(404);
-	
-	}
+  if (argCount != 0) {
+    runtimeError("clock() takes only 1 argument");
+    std::exit(404);
+  }
 
-	double seconds = static_cast<double>(std::clock()) / CLOCKS_PER_SEC;
-	return Value::Number(seconds);
+  double seconds = static_cast<double>(std::clock()) / CLOCKS_PER_SEC;
+  return Value::Number(seconds);
 }
-
-
 
 Value VM::load_native(int argCount, int stackIndex) {
-    if (argCount != 1) {
-        runtimeError("load() takes exactly one argument.");
-        return Value::Nil();
-    }
-    Value& arg = stack[stackIndex];
-    if (!Value::is_string(arg)) {
-        runtimeError("load() argument must be a string.");
-        return Value::Nil();
-    }
-    try {
+  if (argCount != 1) {
+    runtimeError("load() takes exactly one argument.");
+    return Value::Nil();
+  }
+  Value &arg = stack[stackIndex];
+  if (!Value::is_string(arg)) {
+    runtimeError("load() argument must be a string.");
+    return Value::Nil();
+  }
+  try {
 
-        std::shared_ptr<ObjString> filename = Value::as_string(arg);
-        py::object df = pandas.attr("read_csv")(filename->get_string());
-        return Value::PyObject(df);
-    } catch (const py::error_already_set& e) {
-		std::string error = std::string("Python error in load(): ") + e.what();
+    std::shared_ptr<ObjString> filename = Value::as_string(arg);
+    py::object df = pandas.attr("read_csv")(filename->get_string());
+    return Value::PyObject(df);
+  } catch (const py::error_already_set &e) {
+    std::string error = std::string("Python error in load(): ") + e.what();
 
-        runtimeError(error);
-        return Value::Nil();
-    }
+    runtimeError(error);
+    return Value::Nil();
+  }
 }
 Value VM::clean_native(int arg_count, int stack_index) {
-	if (arg_count != 2) {
-		runtimeError("clean() takes exactly two arguments: method (string) and data (DataFrame).");
-		return Value::Nil();
-	}
-	Value& method_val = stack[stack_index];
-	Value& data_val = stack[stack_index + 1];
-	if (!Value::is_string(method_val)) {
-		runtimeError("clean() first argument must be a string (method).");
-		return Value::Nil();
-	}
-	if (!Value::is_py_obj(data_val)) {
-		runtimeError("clean() second argument must be a DataFrame (Python object).");
-		return Value::Nil();
-	}
-	try {
-		std::shared_ptr<ObjString> method = Value::as_string(method_val);
-		py::object df = data_val.as_py_object();
-		if (method->get_string() == "remove nulls") {
-			df = df.attr("dropna")();
-		}
-		else {
-			std::string message = std::string("Unsupported clean method") + method->get_string().c_str();
-			runtimeError(message );
-			return Value::Nil();
-		}
-		return Value::PyObject(df);
-	}
-	catch (const py::error_already_set& e) {
-		std::string message = std::string("Python error in clean()") +e.what();
-		runtimeError(message);
-		return Value::Nil();
-	}
+  if (arg_count != 2) {
+    runtimeError("clean() takes exactly two arguments: method (string) and "
+                 "data (DataFrame).");
+    return Value::Nil();
+  }
+  Value &method_val = stack[stack_index];
+  Value &data_val = stack[stack_index + 1];
+  if (!Value::is_string(method_val)) {
+    runtimeError("clean() first argument must be a string (method).");
+    return Value::Nil();
+  }
+  if (!Value::is_py_obj(data_val)) {
+    runtimeError(
+        "clean() second argument must be a DataFrame (Python object).");
+    return Value::Nil();
+  }
+  try {
+    std::shared_ptr<ObjString> method = Value::as_string(method_val);
+    py::object df = data_val.as_py_object();
+    if (method->get_string() == "remove nulls") {
+      df = df.attr("dropna")();
+    } else {
+      std::string message = std::string("Unsupported clean method") +
+                            method->get_string().c_str();
+      runtimeError(message);
+      return Value::Nil();
+    }
+    return Value::PyObject(df);
+  } catch (const py::error_already_set &e) {
+    std::string message = std::string("Python error in clean()") + e.what();
+    runtimeError(message);
+    return Value::Nil();
+  }
 }
 std::pair<Value, Value> VM::split_method(int arg_count, int stack_index) {
-	if (arg_count != 2) {
-		runtimeError("split() takes exactly two arguments: ratio (string) and data (DataFrame).");
-		return { Value::Nil(), Value::Nil() };
-	}
+  if (arg_count != 2) {
+    runtimeError("split() takes exactly two arguments: ratio (string) and data "
+                 "(DataFrame).");
+    return {Value::Nil(), Value::Nil()};
+  }
 
-	Value& data_val = stack[stack_index];
-	Value& ratio_val = stack[stack_index + 1];
+  Value &data_val = stack[stack_index];
+  Value &ratio_val = stack[stack_index + 1];
 
-	if (!Value::is_string(ratio_val)) {
-		runtimeError("split() first argument must be a string (e.g. \"80-20\").");
-		return { Value::Nil(), Value::Nil() };
-	}
-	if (!Value::is_py_obj(data_val)) {
-		runtimeError("split() second argument must be a DataFrame (Python object).");
-		return { Value::Nil(), Value::Nil() };
-	}
+  if (!Value::is_string(ratio_val)) {
+    runtimeError("split() first argument must be a string (e.g. \"80-20\").");
+    return {Value::Nil(), Value::Nil()};
+  }
+  if (!Value::is_py_obj(data_val)) {
+    runtimeError(
+        "split() second argument must be a DataFrame (Python object).");
+    return {Value::Nil(), Value::Nil()};
+  }
 
-	try {
-		// Extract ratio string
-		std::shared_ptr<ObjString> ratio_str = Value::as_string(ratio_val);
-		std::string ratio = ratio_str->get_string();
+  try {
+    // Extract ratio string
+    std::shared_ptr<ObjString> ratio_str = Value::as_string(ratio_val);
+    std::string ratio = ratio_str->get_string();
 
-		// Parse "80-20"
-		size_t dash_pos = ratio.find('-');
-		if (dash_pos == std::string::npos) {
-			runtimeError("split() ratio format must be like \"80-20\".");
-			return { Value::Nil(), Value::Nil() };
-		}
+    // Parse "80-20"
+    size_t dash_pos = ratio.find('-');
+    if (dash_pos == std::string::npos) {
+      runtimeError("split() ratio format must be like \"80-20\".");
+      return {Value::Nil(), Value::Nil()};
+    }
 
-		int train_percent = std::stoi(ratio.substr(0, dash_pos));
-		int test_percent = std::stoi(ratio.substr(dash_pos + 1));
+    int train_percent = std::stoi(ratio.substr(0, dash_pos));
+    int test_percent = std::stoi(ratio.substr(dash_pos + 1));
 
-		if (train_percent + test_percent != 100) {
-			runtimeError("split() percentages must add up to 100.");
-			return { Value::Nil(), Value::Nil() };
-		}
+    if (train_percent + test_percent != 100) {
+      runtimeError("split() percentages must add up to 100.");
+      return {Value::Nil(), Value::Nil()};
+    }
 
-		// Access DataFrame
-		py::object df = data_val.as_py_object();
+    // Access DataFrame
+    py::object df = data_val.as_py_object();
 
-		// Convert train % to fraction
-		double frac = train_percent / 100.0;
+    // Convert train % to fraction
+    double frac = train_percent / 100.0;
 
-		// Use pandas train_test_split equivalent
-		py::module_ sklearn = py::module_::import("sklearn.model_selection");
-		py::tuple result = sklearn.attr("train_test_split")(df, py::arg("test_size") = 1.0 - frac);
+    // Use pandas train_test_split equivalent
+    py::module_ sklearn = py::module_::import("sklearn.model_selection");
+    py::tuple result =
+        sklearn.attr("train_test_split")(df, py::arg("test_size") = 1.0 - frac);
 
-		py::object train_df = result[0];
-		py::object test_df = result[1];
+    py::object train_df = result[0];
+    py::object test_df = result[1];
 
-		return { Value::PyObject(train_df), Value::PyObject(test_df) };
-	}
-	catch (const py::error_already_set& e) {
-		std::string message = std::string("Python error in split(): ") + e.what();
-		runtimeError(message);
-		return { Value::Nil(), Value::Nil() };
-	}
+    return {Value::PyObject(train_df), Value::PyObject(test_df)};
+  } catch (const py::error_already_set &e) {
+    std::string message = std::string("Python error in split(): ") + e.what();
+    runtimeError(message);
+    return {Value::Nil(), Value::Nil()};
+  }
 }
 
 Value VM::train_method(int arg_count, int stack_index) {
-    // Accept 2 args (model_name, dataset) or 3 args (model_name, param, dataset)
-    if (arg_count != 2 && arg_count != 3) {
-        runtimeError("train() requires either 2 args (model, dataset) or 3 args (model, param, dataset).");
-        return Value::Nil();
-    }
+  // Accept 2 args (model_name, dataset) or 3 args (model_name, param, dataset)
+  if (arg_count != 2 && arg_count != 3) {
+    runtimeError("train() requires either 2 args (model, dataset) or 3 args "
+                 "(model, param, dataset).");
+    return Value::Nil();
+  }
 
-    Value& model_val = stack[stack_index + 0]; // always: model name
-    Value& data_val  = stack[stack_index + (arg_count == 2 ? 1 : 2)]; // dataset
-    Value* param_val = (arg_count == 3) ? &stack[stack_index + 1] : nullptr;
+  Value &model_val = stack[stack_index + 0]; // always: model name
+  Value &data_val = stack[stack_index + (arg_count == 2 ? 1 : 2)]; // dataset
+  Value *param_val = (arg_count == 3) ? &stack[stack_index + 1] : nullptr;
 
-    if (!Value::is_obj(model_val)) {
-        runtimeError("train(): first argument must be a string (model name).");
-        return Value::Nil();
-    }
-    if (!Value::is_py_obj(data_val)) {
-        runtimeError("train(): dataset must be a Python object.");
-        return Value::Nil();
-    }
+  if (!Value::is_obj(model_val)) {
+    runtimeError("train(): first argument must be a string (model name).");
+    return Value::Nil();
+  }
+  if (!Value::is_py_obj(data_val)) {
+    runtimeError("train(): dataset must be a Python object.");
+    return Value::Nil();
+  }
 
-	try {
+  try {
 
-		auto model_name_obj = std::dynamic_pointer_cast<ObjString>(model_val.as_obj());
-		const std::string& model_name = model_name_obj->get_string();
-		py::object Model = import_model_from_registry(model_name);
-		// Instantiate the model
-		py::object model;
-		if (model_name == "RandomForest") {
-			int n_estimators = 100; // default
-			if (param_val && Value::is_number(*param_val)) {
-				n_estimators = static_cast<int>(param_val->as_number());
-			}
-			model = Model(py::arg("n_estimators") = n_estimators,py::arg("random_state") = 42);
-		} else {
-		// For now: ignore param if provided
-			model = Model();
-		}
-		// Expect dataset as (X, y) tuple/list/DataFrame/obj with .X and .y
-		py::object ds = data_val.as_py_object();
-		py::object X, y;
-		if (py::isinstance<py::tuple>(ds) || py::isinstance<py::list>(ds)) {
-			// Case 1: (X, y) tuple or list
-			X = ds.attr("__getitem__")(0);
-			y = ds.attr("__getitem__")(1);
-		} else if (py::hasattr(ds, "X") && py::hasattr(ds, "y")) {
-			// Case 2: object with .X and .y attributes
-			X = ds.attr("X");
-			y = ds.attr("y");
-		} else {
-			// Case 3: pandas DataFrame
-			auto pd = py::module_::import("pandas");
-			if (py::isinstance(ds, pd.attr("DataFrame"))) {
-				py::object iloc = ds.attr("iloc");
-				// X = all columns except last
-				X = iloc.attr("__getitem__")(py::make_tuple(
-				py::slice(py::none(), py::none(), py::int_(1)),py::slice(py::none(), py::int_(-1), py::int_(1))
-				));
-				// y = last column
-			y = iloc.attr("__getitem__")(py::make_tuple(
-					py::slice(py::none(), py::none(), py::int_(1)),-1	));
-			} else {
-				runtimeError("train(): dataset must be (X, y), have attributes X and y, or be a pandas DataFrame.");
-				return Value::Nil();
-			}
-		}
-		// Train the model
-		model.attr("fit")(X, y);
-		return Value::PyObject(model);
-	}
+    auto model_name_obj =
+        std::dynamic_pointer_cast<ObjString>(model_val.as_obj());
+    const std::string &model_name = model_name_obj->get_string();
+    py::object Model = import_model_from_registry(model_name);
+    // Instantiate the model
+    py::object model;
+    if (model_name == "RandomForest") {
+      int n_estimators = 100; // default
+      if (param_val && Value::is_number(*param_val)) {
+        n_estimators = static_cast<int>(param_val->as_number());
+      }
+      model = Model(py::arg("n_estimators") = n_estimators,
+                    py::arg("random_state") = 42);
+    } else {
+      // For now: ignore param if provided
+      model = Model();
+    }
+    // Expect dataset as (X, y) tuple/list/DataFrame/obj with .X and .y
+    py::object ds = data_val.as_py_object();
+    py::object X, y;
+    if (py::isinstance<py::tuple>(ds) || py::isinstance<py::list>(ds)) {
+      // Case 1: (X, y) tuple or list
+      X = ds.attr("__getitem__")(0);
+      y = ds.attr("__getitem__")(1);
+    } else if (py::hasattr(ds, "X") && py::hasattr(ds, "y")) {
+      // Case 2: object with .X and .y attributes
+      X = ds.attr("X");
+      y = ds.attr("y");
+    } else {
+      // Case 3: pandas DataFrame
+      auto pd = py::module_::import("pandas");
+      if (py::isinstance(ds, pd.attr("DataFrame"))) {
+        py::object iloc = ds.attr("iloc");
+        // X = all columns except last
+        X = iloc.attr("__getitem__")(
+            py::make_tuple(py::slice(py::none(), py::none(), py::int_(1)),
+                           py::slice(py::none(), py::int_(-1), py::int_(1))));
+        // y = last column
+        y = iloc.attr("__getitem__")(
+            py::make_tuple(py::slice(py::none(), py::none(), py::int_(1)), -1));
+      } else {
+        runtimeError("train(): dataset must be (X, y), have attributes X and "
+                     "y, or be a pandas DataFrame.");
+        return Value::Nil();
+      }
+    }
+    // Train the model
+    model.attr("fit")(X, y);
+    return Value::PyObject(model);
+  }
 
-    catch (const py::error_already_set& e) {
-        runtimeError(std::string("Python error in train(): ") + e.what());
-        return Value::Nil();
-    }
-    catch (const std::exception& e) {
-        runtimeError(std::string("Error in train(): ") + e.what());
-        return Value::Nil();
-    }
+  catch (const py::error_already_set &e) {
+    runtimeError(std::string("Python error in train(): ") + e.what());
+    return Value::Nil();
+  } catch (const std::exception &e) {
+    runtimeError(std::string("Error in train(): ") + e.what());
+    return Value::Nil();
+  }
 }
 
-
-py::object VM::import_model_from_registry(const std::string& model_name) {
-    auto it = MODEL_REGISTRY.find(model_name);
-    if (it == MODEL_REGISTRY.end()) {
-        throw std::runtime_error("Unsupported model: " + model_name);
-    }
-    const auto& [module_name, class_name] = it->second;
-    return py::module_::import(module_name.c_str()).attr(class_name.c_str());
+py::object VM::import_model_from_registry(const std::string &model_name) {
+  auto it = MODEL_REGISTRY.find(model_name);
+  if (it == MODEL_REGISTRY.end()) {
+    throw std::runtime_error("Unsupported model: " + model_name);
+  }
+  const auto &[module_name, class_name] = it->second;
+  return py::module_::import(module_name.c_str()).attr(class_name.c_str());
 }

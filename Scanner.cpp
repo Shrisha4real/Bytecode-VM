@@ -177,7 +177,7 @@ token_type Scanner::identifier_type() {
             }
         }
     }
-    case 'l': return this->check_keyword(1, 3, "oad", TOKEN_LOAD);
+    // case 'l': return this->check_keyword(1, 3, "oad", TOKEN_LOAD);
     case 'n': return this->check_keyword(1, 2, "il", TOKEN_NIL);
     case 'o': 
     {

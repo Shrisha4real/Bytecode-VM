@@ -141,7 +141,7 @@ public:
 	void parse_slit_statement();
 	void parse_load_statement();
 	void parse_clean_statement();
-	void parse_train_statement();
+	void parse_train_statement(bool can_assign);
 	bool consume_model(token_type type, const std::string message);
 	bool is_model_name(const std::string& name); 
 private:
