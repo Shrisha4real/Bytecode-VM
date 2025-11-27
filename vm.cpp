@@ -369,6 +369,33 @@ InterpretResult VM::run() {
       stack.push_back(constant.clone());
       break;
     }
+	case OpCode::OP_PREDICT: {
+	  uint8_t arg_count = read_byte(frame);
+	  int arg_start = static_cast<int>(stack.size()) - arg_count;
+
+	  Value result = predict_method(arg_count, arg_start);
+
+	  // Remove arguments from the stack
+	  stack.erase(stack.end() - arg_count, stack.end());
+
+	  // Push prediction result (Python object)
+	  stack.push_back(std::move(result));
+	  break;
+	}
+case OpCode::OP_ACCURACY: {
+  uint8_t arg_count = read_byte(frame);
+  int arg_start = static_cast<int>(stack.size()) - arg_count;
+
+  Value result = accuracy_method(arg_count, arg_start);
+
+  // Remove args (model + dataframe)
+  stack.erase(stack.end() - arg_count, stack.end());
+
+  // Push accuracy number
+  stack.push_back(std::move(result));
+  break;
+}
+
     }
   }
   std::cout << "return run()\n\n";
@@ -819,3 +846,118 @@ py::object VM::import_model_from_registry(const std::string &model_name) {
   const auto &[module_name, class_name] = it->second;
   return py::module_::import(module_name.c_str()).attr(class_name.c_str());
 }
+
+
+Value VM::predict_method(int arg_count, int stack_index) {
+  if (arg_count != 2) {
+    runtimeError("predict() takes exactly two arguments: model and data.");
+    return Value::Nil();
+  }
+
+  Value &model_val = stack[stack_index];       // model
+  Value &data_val  = stack[stack_index + 1];   // dataframe or X matrix
+
+  if (!Value::is_py_obj(model_val)) {
+    runtimeError("predict(): first argument must be a Python model object.");
+    return Value::Nil();
+  }
+  if (!Value::is_py_obj(data_val)) {
+    runtimeError("predict(): second argument must be a DataFrame / X matrix.");
+    return Value::Nil();
+  }
+
+  try {
+    py::object model = model_val.as_py_object();
+    py::object df    = data_val.as_py_object();
+
+    py::object X;
+
+    // If df is a pandas DataFrame, drop the last column like in train()
+    auto pd = py::module_::import("pandas");
+    if (py::isinstance(df, pd.attr("DataFrame"))) {
+      py::object iloc = df.attr("iloc");
+      // X = all columns except last
+      X = iloc.attr("__getitem__")(
+            py::make_tuple(
+                py::slice(py::none(), py::none(), py::int_(1)),
+                py::slice(py::none(), py::int_(-1), py::int_(1))
+            ));
+    } else {
+      // Otherwise assume df IS already X
+      X = df;
+    }
+
+    // Perform prediction
+    py::object preds = model.attr("predict")(X);
+
+    return Value::PyObject(preds);
+  }
+  catch (const py::error_already_set &e) {
+    runtimeError(std::string("Python error in predict(): ") + e.what());
+    return Value::Nil();
+  }
+  catch (const std::exception &e) {
+    runtimeError(std::string("Error in predict(): ") + e.what());
+    return Value::Nil();
+  }
+}
+Value VM::accuracy_method(int arg_count, int stack_index) {
+  if (arg_count != 2) {
+    runtimeError("accuracy() takes exactly two arguments: model and test DataFrame.");
+    return Value::Nil();
+  }
+
+  Value &model_val = stack[stack_index];       // model
+  Value &data_val  = stack[stack_index + 1];   // test dataframe
+
+  if (!Value::is_py_obj(model_val)) {
+    runtimeError("accuracy(): first argument must be a Python model object.");
+    return Value::Nil();
+  }
+  if (!Value::is_py_obj(data_val)) {
+    runtimeError("accuracy(): second argument must be a DataFrame.");
+    return Value::Nil();
+  }
+
+  try {
+    py::object model = model_val.as_py_object();
+    py::object df    = data_val.as_py_object();
+
+    // Expect pandas DataFrame (same assumption as train())
+    auto pd = py::module_::import("pandas");
+    if (!py::isinstance(df, pd.attr("DataFrame"))) {
+      runtimeError("accuracy(): test data must be a pandas DataFrame.");
+      return Value::Nil();
+    }
+
+    py::object iloc = df.attr("iloc");
+
+    // Extract X = all columns except last
+    py::object X = iloc.attr("__getitem__")(
+        py::make_tuple(
+            py::slice(py::none(), py::none(), py::int_(1)),
+            py::slice(py::none(), py::int_(-1), py::int_(1))
+        ));
+
+    // Extract y = last column
+    py::object y = iloc.attr("__getitem__")(
+        py::make_tuple(
+            py::slice(py::none(), py::none(), py::int_(1)),
+            -1
+        ));
+
+    // Compute accuracy using sklearn's model.score(X, y)
+    double acc = model.attr("score")(X, y).cast<double>();
+
+    return Value::Number(acc);
+  }
+  catch (const py::error_already_set &e) {
+    runtimeError(std::string("Python error in accuracy(): ") + e.what());
+    return Value::Nil();
+  }
+  catch (const std::exception &e) {
+    runtimeError(std::string("Error in accuracy(): ") + e.what());
+    return Value::Nil();
+  }
+}
+

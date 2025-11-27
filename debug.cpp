@@ -81,6 +81,10 @@ int Debug::disassemble_instruction(Chunk* chunk,  int offset) {
 		return 	simple_instruction("OP_TRAIN", offset);
 	case OpCode::OP_MODEL_NAME:
 		return 	simple_instruction("OP_MODEL_NAME", offset);
+	case OpCode::OP_PREDICT:
+		return 	simple_instruction("OP_PREDICT", offset);
+		case OpCode::OP_ACCURACY:
+		return 	simple_instruction("OP_ACCURACY", offset);
 	default:
 		std::cout << "Unknown op code" << instruction << std::endl;
 		return offset+1;

@@ -112,6 +112,9 @@ Compiler::Compiler(const std::string &source,
 
   rules[token_type::TOKEN_TRAIN] = {std::bind(&Compiler::parse_train_statement, this, _1),
                                    nullptr, Precedence::PREC_NONE};
+  rules[token_type::TOKEN_PREDICT] = {std::bind(&Compiler::predict_statement, this, _1), nullptr, Precedence::PREC_NONE};
+
+  rules[token_type::TOKEN_ACCURACY] = {std::bind(&Compiler::accuracy_statement, this, _1), nullptr, Precedence::PREC_NONE};
   rules[token_type::TOKEN_EOF] = {nullptr, nullptr, Precedence::PREC_NONE};
 };
 
@@ -851,4 +854,26 @@ void Compiler::parse_train_statement(bool can_assign) {
 // bool consume_model(Token model , token_type type, const std::string message);
 bool Compiler::is_model_name(const std::string &name) {
   return MODEL_REGISTRY.find(name) != MODEL_REGISTRY.end();
+}
+
+
+void Compiler::predict_statement(bool can_assign){
+	named_variable(parser->current, false);
+	this->parser->consume(token_type::TOKEN_IDENTIFIER,"Expect declared variable");
+
+	this->parser->consume(TOKEN_ON, "Expect 'on' after model definition.");
+	named_variable(parser->current, false);
+	this->parser->consume(token_type::TOKEN_IDENTIFIER,"Expect declared variable");
+	emit_bytes(OP_PREDICT , 2);
+}
+void Compiler::accuracy_statement(bool can_assign){
+        this->parser->consume(TOKEN_OF, "Expect 'of' after model definition.");
+
+	named_variable(parser->current, false);
+	this->parser->consume(token_type::TOKEN_IDENTIFIER,"Expect declared variable");
+
+	this->parser->consume(TOKEN_ON, "Expect 'on' after model definition.");
+	named_variable(parser->current, false);
+	this->parser->consume(token_type::TOKEN_IDENTIFIER,"Expect declared variable");
+	emit_bytes(OP_ACCURACY , 2);
 }

@@ -74,7 +74,9 @@ public:
 	Value load_native(int arg_count, int stack_index);
 	Value clean_native(int arg_count, int stack_index);
 	std::pair<Value, Value> split_method(int arg_count, int stack_index);
+	Value predict_method(int arg_count , int stack_index);
 	Value train_method(int arg_count, int stack_index);
+	Value accuracy_method(int arg_count , int stack_index);
 	py::object import_model_from_registry(const std::string& model_name);
 };
 

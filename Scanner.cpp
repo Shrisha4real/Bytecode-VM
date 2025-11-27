@@ -1,4 +1,5 @@
 #include "Scanner.h"
+#include <iostream>
 
 Scanner::Scanner(const std::string& src) : source(src), start(src.data()), current(src.data()), line(1) {}
 
@@ -155,9 +156,16 @@ Token Scanner::identifier() {
 
 token_type Scanner::identifier_type() {
     switch (this->start[0]) {
-    case 'a': return this->check_keyword(1, 2, "nd", TOKEN_AND);
-    case 'c': 
-    {
+    case 'a':{
+		if(current -start >1){
+			switch(this->start[2]){
+				case 'c': return check_keyword(1 ,7 , "ccuracy" , TOKEN_ACCURACY);
+				case 'n': return this->check_keyword(1, 2, "nd", TOKEN_AND);
+			}
+		}
+	}
+
+    case 'c': {
         if ((this->current - this->start > 1) && this->start[1]=='l') {
 
             switch (this->start[2]) {
@@ -182,13 +190,24 @@ token_type Scanner::identifier_type() {
     case 'o': 
     {
         if (this->current - this->start > 1) {
-            switch (this->start[1]) {
-            case 'r': return this->check_keyword(1, 1, "f", TOKEN_OR);
+            switch (this->start[1] ) {
+            case 'r': return this->check_keyword(1, 1, "r", TOKEN_OR);
             case 'n':return this->check_keyword(1, 1, "n", TOKEN_ON);
+		case 'f' : return this->check_keyword(1,1,"f", TOKEN_OF);
             }
         }
     }
-       case 'p': return this->check_keyword(1, 4, "rint", TOKEN_PRINT);
+       case 'p':   {
+       if((this->current - this->start > 1) && this->start[1] == 'r') {
+            switch(this->start[2]) {
+		 case 'i': return this->check_keyword(2, 3, "int", TOKEN_PRINT);
+		case 'e' :return this->check_keyword(2 , 5, "edict" , TOKEN_PREDICT); 
+
+            }
+        }
+
+
+		}  
     case 'r': return this->check_keyword(1, 5, "eturn", TOKEN_RETURN);
     case 's': 
     {

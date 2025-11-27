@@ -144,6 +144,8 @@ public:
 	void parse_train_statement(bool can_assign);
 	bool consume_model(token_type type, const std::string message);
 	bool is_model_name(const std::string& name); 
+	void predict_statement(bool can_assign);  
+	void accuracy_statement(bool can_assign);
 private:
 	inline void debug_print_code();
 };
