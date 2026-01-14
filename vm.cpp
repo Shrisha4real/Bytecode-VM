@@ -93,7 +93,7 @@ InterpretResult VM::run() {
     case OpCode::OP_CONSTANT: {
       Value &constant = read_constant(frame);
       stack.push_back(std::move(constant));
-      std::cout << "run() -> case:OP_CONSTANT ";
+      // std::cout << "run() -> case:OP_CONSTANT ";
 
       std::visit(
           [](auto &&arg) {

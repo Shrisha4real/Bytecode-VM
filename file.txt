@@ -1,13 +1,10 @@
-var x = load("/home/shrisha4real/Projects/Bytecode-VM/Iris.csv") ;
-clean("remove nulls") in x;
-slit x "80-20" to trn, tst;
-var model = train RandomForest(100) on trn;
-print x; // prints the size of the dataframe -> "(150, 6)"
-print tst;  //prints "(30, 6)"
-print trn; //prints "(120, 6)"
+fun foo(x){
+	if(x>4){
+		print("if stmt");
+	}
+	else{
+		print("else stmt");
+	}
+}
 
-var pred  = predict model on tst ;
-var acc = accuracy of model on tst;
-
-
-print acc ;
+foo(5);
