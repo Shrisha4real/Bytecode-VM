@@ -2,4 +2,4 @@
 .cache/
 extern/
 .gitignore
-
+compile_commands.json

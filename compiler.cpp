@@ -120,10 +120,13 @@ Compiler::Compiler(const std::string &source,
 
 void Compiler::debug_print_code() {
   if (!this->parser->had_error) {
+		#if DEBUGGER ==1
     Debug::disassemble_chuck(this->current_chunk(),
                              (current->function->name == nullptr)
                                  ? " <script> "
                                  : current->function->name->get_string());
+		
+	#endif
   }
 }
 

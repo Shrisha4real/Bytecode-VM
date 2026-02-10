@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.15)
 project(BytecodeVM LANGUAGES CXX)
 
-# Require C++20
+# C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-        
-# Add all source files
-set(SOURCES
+
+# Options
+option(DEBUGGER "Enable debug messages" OFF)
+
+# Sources
+add_executable(BytecodeVM
     main.cpp
     Object.cpp
     ParseRule.cpp
@@ -24,27 +25,22 @@ set(SOURCES
     debug.cpp
     vm.cpp
 )
-# Include headers
 
-set(CMAKE_BUILD_TYPE Debug)
-include_directories(${CMAKE_SOURCE_DIR})
+# Project includes (headers in root or include/)
+target_include_directories(BytecodeVM PRIVATE
+    ${CMAKE_SOURCE_DIR}
+)
 
-# Add pybind11 from extern/
+# pybind11 (embedded Python)
 add_subdirectory(extern/pybind11)
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
-# Define the executable
-add_executable(BytecodeVM ${SOURCES})
-
-# Link pybind11 (if you want to embed Python or expose bindings)
 target_link_libraries(BytecodeVM PRIVATE pybind11::embed)
 
-# Optionally: set output dir
+# Debug macro wiring
+if (DEBUGGER)
+    target_compile_definitions(BytecodeVM PRIVATE DEBUGGER)
+endif()
+
+# Output directory (optional, but clean)
 set_target_properties(BytecodeVM PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-)
-add_custom_target(build_and_run
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} 
-    COMMAND ${CMAKE_BINARY_DIR}/bin/BytecodeVM ${CMAKE_SOURCE_DIR}/file.txt
-    DEPENDS BytecodeVM
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )

@@ -1,10 +1,9 @@
-fun foo(x){
-	if(x>4){
-		print("if stmt");
-	}
-	else{
-		print("else stmt");
-	}
+var x = "global";
+fun outer() {
+  var x = "outer";
+  fun inner() {
+    print x;
+  }
+  inner();
 }
-
-foo(5);
+outer();

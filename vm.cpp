@@ -83,10 +83,11 @@ InterpretResult VM::run() {
     // std::cout << std::endl;
     Chunk *frame_ptr = &(frame->function->chunk);
     // CHECK the pointer values are apssed on to the function
-    Debug::disassemble_instruction(
+	#if DEBUGGER == 1
+		Debug::disassemble_instruction(
         frame_ptr, static_cast<int>((frame->ip) -
                                     ((frame->function->chunk.code).begin())));
-
+		#endif 
     uint8_t instruction;
     switch (instruction = read_byte(frame)) {
 
