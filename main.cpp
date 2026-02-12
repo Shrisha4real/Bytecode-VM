@@ -111,7 +111,7 @@ void run_file(const string &filename) {
 		exit(70);
 	}
 	else {
-		std::cout << "successfull";
+		// std::cout << "successfull";
 		exit(200);
 	}
 	file.close();

@@ -56,8 +56,10 @@ uint16_t VM::read_short(CallFrame *frame) {
 }
 
 InterpretResult VM::run() {
-  std::cout << "\nexecuting run()\n";
-  CallFrame *frame = &frames[frame_count - 1];
+	#if DEBUGGER == 1 
+	  std::cout << "\n\n Runtime debugging \n";
+	#endif
+CallFrame *frame = &frames[frame_count - 1];
 
   while (true) {
 
@@ -96,22 +98,22 @@ InterpretResult VM::run() {
       stack.push_back(std::move(constant));
       // std::cout << "run() -> case:OP_CONSTANT ";
 
-      std::visit(
-          [](auto &&arg) {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, std::monostate>) {
-              std::cout << "nil";
-            } else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
-
-              arg->print();
-            } else if constexpr (std::is_same_v<T, py::object>) {
-              std::cout << "python obj";
-            } else {
-              std::cout << arg;
-            }
-          },
-          stack.back().data);
-      std::cout << std::endl;
+      // std::visit(
+      //     [](auto &&arg) {
+      //       using T = std::decay_t<decltype(arg)>;
+      //       if constexpr (std::is_same_v<T, std::monostate>) {
+      //         std::cout << "nil";
+      //       } else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
+      //
+      //         arg->print();
+      //       } else if constexpr (std::is_same_v<T, py::object>) {
+      //         // std::cout << "python obj";
+      //       } else {
+      //         // std::cout << arg;
+      //       }
+      //     },
+      //     stack.back().data);
+      // std::cout << std::endl;
 
       break;
     }
