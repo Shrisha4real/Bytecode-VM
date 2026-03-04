@@ -50,3 +50,9 @@ Chunk& Chunk::operator=(const Chunk& other)
 
     return *this;
 }
+
+// == freeChunk()
+Chunk::~Chunk(){
+	std::vector<uint8_t>().swap(this->code);
+}
+

@@ -1,5 +1,5 @@
 #pragma once
-#include<vector>
+#include<common.h> 
 #include "Value.h"
 class Value;
 
@@ -21,6 +21,7 @@ public:
 
 	size_t add_constant(Value&& value);
 	void write_chunk(uint8_t byte , int line);
+	~Chunk();
 
 };
 

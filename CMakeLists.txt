@@ -28,7 +28,7 @@ add_executable(BytecodeVM
 
 # Project includes (headers in root or include/)
 target_include_directories(BytecodeVM PRIVATE
-    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR} include/
 )
 
 # pybind11 (embedded Python)

@@ -1,6 +1,9 @@
 #pragma once
 #include<functional>
-
+#include<vector>
+#include<cstddef>
+#include<cstdint>
+#include<iostream>
 enum OpCode {
 	OP_CONSTANT,
 	OP_NEGATE,
